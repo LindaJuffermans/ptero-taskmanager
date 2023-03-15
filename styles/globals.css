@@ -1,107 +1,184 @@
-:root {
-  --max-width: 1100px;
-  --border-radius: 12px;
-  --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
-    'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
-    'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
+@import url('https://fonts.googleapis.com/css?family=Rubik:300,400,500&display=swap');
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono|IBM+Plex+Sans:500&display=swap');
+@import url('https://pro.fontawesome.com/releases/v5.10.0/css/all.css');
 
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+/* ========================================================================= */
+/* Style definitions to be used throughout the CSS file                      */
+/* ========================================================================= */
+:root,
+::before {
+  --slatecolour-01: 31, 41, 51;
+  --slatecolour-02: 51, 64, 77;
+  --slatecolour-03: 63, 77, 90;
+  --slatecolour-04: 81, 95, 108;
+  --slatecolour-05: 96, 109, 123;
+  --slatecolour-06: 117, 135, 156;
+  --slatecolour-07: 141, 152, 162;
+  --slatecolour-08: 202, 209, 216;
+  --slatecolour-09: 245, 247, 250;
+  --slatecolour-10: 255, 255, 255;
 
-  --primary-glow: conic-gradient(
-    from 180deg at 50% 50%,
-    #16abff33 0deg,
-    #0885ff33 55deg,
-    #54d6ff33 120deg,
-    #0071ff33 160deg,
-    transparent 360deg
-  );
-  --secondary-glow: radial-gradient(
-    rgba(255, 255, 255, 1),
-    rgba(255, 255, 255, 0)
-  );
+  --bluecolour-01: 29, 78, 216;
+  --bluecolour-02: 59, 130, 246;
 
-  --tile-start-rgb: 239, 245, 249;
-  --tile-end-rgb: 228, 232, 233;
-  --tile-border: conic-gradient(
-    #00000080,
-    #00000040,
-    #00000030,
-    #00000020,
-    #00000010,
-    #00000010,
-    #00000080
-  );
+  --body-bg: var(--slatecolour-02);
+  --body-fsize: 0.8rem;
 
-  --callout-rgb: 238, 240, 241;
-  --callout-border-rgb: 172, 175, 176;
-  --card-rgb: 180, 185, 188;
-  --card-border-rgb: 131, 134, 135;
+  --header-bg: var(--slatecolour-01);
+  --header-fg: var(--slatecolour-08);
+  --header-height: 56px;
+  --header-fsize: 1.5rem;
+  --header-fweight: 500;
+
+  --menu-bg: var(--slatecolour-03);
+  --menu-fg: var(--slatecolour-08);
+  --menu-fsize: 0.875rem;
+  --menu-fweight: 500;
+
+  --info-bg: var(--slatecolour-04);
+  --info-fg: var(--slatecolour-08);
+  --info-fsize: 0.875rem;
+  --info-fweight: 100;
+
+  --input-bg: var(--slatecolour-07);
+  --input-fg: var(--slatecolour-01);
+  --input-border: 1px solid rgb(var(--input-fg));
+  --input-focus-bg: var(--slatecolour-08);
+  --input-focus-fg: var(--slatecolour-01);
+  --input-focus-border: 1px solid rgb(var(--input-focus-fg));
+  --input-disabled-bg: var(--slatecolour-04);
+  --input-disabled-fg: var(--slatecolour-07);
+  --input-disabled-border: 1px solid rgb(var(--input-disabled-fg));
+
+  /* width = 2x height */
+  --toggle-height: 20px;
+  --toggle-width: 35px;
+  --toggle-off-bg: var(--slatecolour-06);
+  --toggle-off-fg: var(--slatecolour-10);
+  --toggle-off-border: var(--slatecolour-06);
+  --toggle-on-bg: var(--bluecolour-02);
+  --toggle-on-fg: var(--slatecolour-10);
+  --toggle-on-border: 29, 78, 216;
+
+  --icon-bg: var(--slatecolour-03);
+  --icon-fg: var(--slatecolour-08);
+  --icon-hover-bg: var(--slatecolour-05);
+  --icon-hover-fg: var(--slatecolour-09);
+  --icon-click-bg: var(--slatecolour-07);
+  --icon-click-fg: var(--slatecolour-09);
+  --icon-fsize: 24px;
+  --icon-fweight: 500;
+  --icon-size: 48px;
+
+  --pane-offset: 20px;
+  --container-offset: 30px;
+
+  --scrollbar-size: 16px;
+  --scrollbar-margin: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
 
-    --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
-    --secondary-glow: linear-gradient(
-      to bottom right,
-      rgba(1, 65, 255, 0),
-      rgba(1, 65, 255, 0),
-      rgba(1, 65, 255, 0.3)
-    );
-
-    --tile-start-rgb: 2, 13, 46;
-    --tile-end-rgb: 2, 5, 19;
-    --tile-border: conic-gradient(
-      #ffffff80,
-      #ffffff40,
-      #ffffff30,
-      #ffffff20,
-      #ffffff10,
-      #ffffff10,
-      #ffffff80
-    );
-
-    --callout-rgb: 20, 20, 20;
-    --callout-border-rgb: 108, 108, 108;
-    --card-rgb: 100, 100, 100;
-    --card-border-rgb: 200, 200, 200;
-  }
-}
-
+/* ========================================================================= */
+/* Reset the browser default margins etc.                                    */
+/* ========================================================================= */
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  border: 0;
+  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  font-weight: 500;
 }
 
-html,
+
+/* ========================================================================= */
+/* Scroll bar styles                                                         */
+/* ========================================================================= */
+::-webkit-scrollbar {
+  background-color: rgb(var(--body-bg));
+  width: calc(var(--scrollbar-size) + var(--scrollbar-margin));
+}
+::-webkit-scrollbar-button {
+  color: rgb(var(--icon-fg));
+  background-color: rgb(var(--icon-bg));
+  height: calc(var(--scrollbar-size));
+  background-repeat: no-repeat;
+  background-size: calc(var(--scrollbar-size) - 4px);
+  background-position: center center;
+  border-left: var(--scrollbar-margin) solid rgb(var(--body-bg));
+}
+::-webkit-scrollbar-button:hover {
+  background-color: rgb(var(--icon-hover-bg));
+}
+::-webkit-scrollbar-button:active {
+  background-color: rgb(var(--icon-click-bg));
+}
+::-webkit-scrollbar-button:vertical:start {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23cad1d8' viewBox='0 0 448 512'><path d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:start:hover {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23f5f7fa' viewBox='0 0 448 512'><path d='M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:end {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23cad1d8' viewBox='0 0 448 512'><path d='M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:end:hover {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%23f5f7fa' viewBox='0 0 448 512'><path d='M207.029 381.476L12.686 187.132c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z'/></svg>");
+}
+::-webkit-scrollbar-track {
+  margin: 2px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--icon-bg));
+  border-left: var(--scrollbar-margin) solid rgb(var(--body-bg));
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--icon-hover-bg));
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: rgb(var(--icon-click-bg));
+}
+::-webkit-scrollbar-corner {
+  background-color: purple;
+}
+/* remove double buttons on flex */
+::-webkit-scrollbar-button:vertical:start:increment,
+::-webkit-scrollbar-button:vertical:end:decrement,
+::-webkit-scrollbar-button:horizontal:start:increment, 
+::-webkit-scrollbar-button:horizontal:end:decrement 
+{
+    display: none;
+}
+
+
+/* ========================================================================= */
+/* Common across all components                                              */
+/* ========================================================================= */
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  font-family: 'IBM Plex Sans', 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  font-size: 14px;
+  background: rgb(var(--body-bg));
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+h1 {
+  color: rgb(var(--header-fg));
+  font-size: var(--header-fsize);
+  font-weight: var(--header-fweight);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+h2 {
+  font-size: var(--header-fsize);
+  font-weight: var(--header-fweight);
+  color: rgb(var(--header-fg));
+  background-color: rgb(var(--header-bg));
+  height: var(--icon-size);
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }

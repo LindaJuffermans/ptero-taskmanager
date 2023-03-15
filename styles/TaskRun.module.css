@@ -1,0 +1,13 @@
+.taskRun {
+  width: 100%;
+  height: 100%;
+  background: rgb(var(--header-bg));
+  padding: 4px 4px var(--container-offset) var(--container-offset);
+  border-radius: 20px 0 0 20px;
+}
+.console {
+  color: rgb(var(--input-focus-fg));
+  background: rgb(var(--input-focus-bg));
+  width: 100%;
+  height: 100%;
+}

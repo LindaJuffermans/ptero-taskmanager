@@ -1,0 +1,249 @@
+.taskManager {
+  width: 100%;
+  max-height: 100%;
+  background: rgb(var(--header-bg));
+  padding: 4px 4px var(--container-offset) var(--container-offset);
+  border-radius: 20px 0 0 20px;
+  overflow-y: auto;
+}
+
+.taskManager h2 p {
+  flex: 1 1 100%;
+}
+
+.taskManager button {
+  flex: 1 0 var(--icon-size);
+
+  font-size: var(--header-fsize);
+  font-weight: var(--header-fweight);
+  color: rgb(var(--icon-fg));
+  background-color: rgb(var(--icon-bg));
+  border-radius: 10px 0 0 0;
+
+  height: var(--icon-size);
+  width: var(--icon-size);
+  margin: 0 0 0 1px;
+
+  border-left: 1px solid transparent;
+
+  cursor: pointer;
+  outline: none;
+}
+.taskManager button::before {
+  font-size: var(--icon-fsize);
+  font-weight: var(--icon-fweight);
+}
+.taskManager button:hover {
+  color: rgb(var(--icon-hover-fg));
+  background-color: rgb(var(--icon-hover-bg));
+}
+.taskManager button:active {
+  color: rgb(var(--icon-click-fg));
+  background-color: rgb(var(--icon-click-bg));
+}
+.taskManager button.warning:hover {
+  color: rgb(var(--icon-bg));
+  background: red;
+}
+.taskManager button.warning:active {
+  color: rgb(var(--icon-click-fg));
+  background: red;
+}
+.taskManager button.add {
+  width: 100%;
+}
+
+.taskManager ol.list {
+  margin-top: 8px;
+}
+
+/* A single task in the Taskmanager */
+.taskUi {
+  --toggle-height: 20px;
+  --toggle-width: 35px;
+  --toggle-dot: 16px;
+  --toggle-off-bg: var(--slatecolour-02);
+  --toggle-off-fg: var(--slatecolour-10);
+  --toggle-off-border: var(--slatecolour-01);
+  --toggle-on-bg: var(--bluecolour-02);
+  --toggle-on-fg: var(--slatecolour-10);
+  --toggle-on-border: var(--slatecolour-01);
+
+  font-size: var(--body-fsize);
+  font-weight: var(--body-fweight);
+  color: rgb(var(--info-fg));
+  margin: 0 0 8px 0;
+}
+
+
+/* Every row in the task */
+.taskUi > * {
+  display: block;
+  height: 32px;
+  background: rgb(var(--info-bg));
+  margin: 1px 0 0 0;
+  padding: 0 8px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+/* The task label and buttons */
+.taskUi h3 {
+  margin: 0;
+  padding: 0;
+  height: var(--icon-size);
+  background: none;
+
+  display: flex;
+  align-items: center;
+}
+.taskUi h3 p {
+  flex: 1 1 100%;
+  font-size: var(--menu-fsize);
+  font-weight: var(--menu-fweight);
+  color: rgb(var(--menu-fg));
+  background: rgb(var(--menu-bg));
+
+  height: var(--icon-size);
+  border-radius: 10px 5px 0 0;
+  margin: 0;
+  padding: 0 8px;
+
+  display: flex;
+  align-items: center;
+}
+
+
+/* The task action buttons (move up, move down, delete) */
+.taskUi h3 button {
+  flex: 1 0 var(--icon-size);
+
+  font-size: var(--header-fsize);
+  font-weight: var(--header-fweight);
+  color: rgb(var(--icon-fg));
+  background-color: rgb(var(--icon-bg));
+  border-radius: 10px 0 0 0;
+
+  height: var(--icon-size);
+  width: var(--icon-size);
+  margin: 0 0 0 1px;
+
+  border-left: 1px solid transparent;
+
+  cursor: pointer;
+  outline: none;
+}
+.taskUi h3 button::before {
+  font-size: var(--icon-fsize);
+  font-weight: var(--icon-fweight);
+}
+.taskUi h3 button:hover {
+  color: rgb(var(--icon-hover-fg));
+  background-color: rgb(var(--icon-hover-bg));
+}
+.taskUi h3 button:active {
+  color: rgb(var(--icon-click-fg));
+  background-color: rgb(var(--icon-click-bg));
+}
+.taskUi h3 button.warning:hover {
+  color: rgb(var(--icon-bg));
+  background: red;
+}
+.taskUi h3 button.warning:active {
+  color: rgb(var(--icon-click-fg));
+  background: red;
+}
+/* Hide move up on the first task */
+.taskUi:first-child h3 button.up {
+  display: none;
+}
+/* Hide move down on the first task */
+.taskUi:last-child h3 button.down {
+  display: none;
+}
+
+
+/* task input fields */
+.taskUi > label {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  white-space: nowrap;
+}
+.taskUi > p,
+.taskUi > label p {
+  padding-bottom: 2px;
+}
+
+/* checkboxes are hidden; see .toggle */
+.taskUi input[type=checkbox] {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.taskUi input[type=text],
+.taskUi input[type=number] {
+  color: rgb(var(--input-fg));
+  width: 100%;
+
+  margin: 0 0 0 10px;
+  padding: 4px 5px;
+  border: var(--input-border);
+  background: rgb(var(--input-bg));
+  outline: none;
+}
+.taskUi input[type=text]:disabled,
+.taskUi input[type=number]:disabled {
+  color: rgb(var(--input-disabled-fg));
+  border: var(--input-disabled-border);
+  background: rgb(var(--input-disabled-bg));
+}
+.taskUi input[type=text]:focus,
+.taskUi input[type=number]:focus {
+  color: rgb(var(--input-focus-fg));
+  border: var(--input-border);
+  background: rgb(var(--input-focus-bg));
+}
+
+.taskUi .toggle {
+  position: relative;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  border: 1px solid;
+  border-radius: var(--toggle-height);
+  display: inline-block;
+  cursor: pointer;
+  margin: 0 8px 0 0;
+}
+.taskUi .toggle::before {
+  position: absolute;
+  width: var(--toggle-dot);
+  height: var(--toggle-dot);
+  top: 1px;
+  content: '';
+  border-radius: var(--toggle-height);
+}
+.taskUi .toggle-off {
+  background-color: rgb(var(--toggle-off-bg));
+  border-color: rgb(var(--toggle-off-border));
+}
+.taskUi .toggle-off::before {
+  background-color: rgb(var(--toggle-off-fg));
+  border-color: rgb(var(--toggle-off-fg));
+  left: 1px;
+}
+.taskUi .toggle-on {
+  background-color: rgb(var(--toggle-on-bg));
+  border-color: rgb(var(--toggle-on-border));
+}
+.taskUi .toggle-on::before {
+  background-color: rgb(var(--toggle-on-fg));
+  border-color: rgb(var(--toggle-on-fg));
+  right: 1px;
+}

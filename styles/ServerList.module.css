@@ -1,0 +1,133 @@
+.serverList {
+  --state-green: 0, 192, 0;
+  --state-amber: 255, 192, 0;
+  --state-red: 255, 0, 0;
+
+  --toggle-height: 16px;
+  --toggle-width: 28px;
+  --toggle-dot: 12px;
+  --toggle-off-bg: var(--slatecolour-02);
+  --toggle-off-fg: var(--slatecolour-10);
+  --toggle-off-border: var(--slatecolour-01);
+  --toggle-on-bg: var(--bluecolour-02);
+  --toggle-on-fg: var(--slatecolour-10);
+  --toggle-on-border: var(--slatecolour-01);
+
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.section {
+  width: 100%;
+  min-height: 40px;
+  background: rgb(var(--header-bg));
+  padding: 4px 4px var(--container-offset) var(--container-offset);
+  border-radius: 20px 0 0 20px;
+  margin-top: 10px;
+}
+
+.section:first-of-type {
+  margin-top: 0;
+}
+
+.list {
+  background: rgb(var(--header-bg));
+  font-size: var(--body-fsize);
+}
+
+.list li {
+  height: 30px;
+  color: rgb(var(--state-amber));
+  background: rgba(var(--state-amber), 0.30);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.list li:nth-child(even) {
+  background: rgba(var(--state-amber), 0.50);
+}
+.list li:first-of-type {
+  font-size: var(--menu-fsize);
+  font-weight: var(--menu-fweight);
+  color: rgb(var(--menu-fg));
+  background: rgb(var(--menu-bg));
+}
+.list li.running {
+  color: rgb(var(--state-green));
+  background: rgba(var(--state-green), 0.30);
+}
+.list li.running:nth-child(even) {
+  background: rgba(var(--state-green), 0.50);
+}
+.list li.offline {
+  color: rgb(var(--state-red));
+  background: rgba(var(--state-red), 0.30);
+}
+.list li.offline:nth-child(even) {
+  background: rgba(var(--state-red), 0.50);
+}
+
+.list li p {
+  padding: 0 8px;
+  white-space: nowrap;
+}
+.list li p.name {
+  flex: 2 2 70%;
+}
+.list li p.state,
+.list li p.cpu,
+.list li p.mem {
+  flex: 1 1 20%;
+  display: flex;
+  justify-content: flex-end;
+}
+.list li p.tasks {
+  flex: 1 1 10%;
+  display: flex;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+p.tasks input[type=checkbox] {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+.toggle {
+  position: relative;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  border: 1px solid;
+  border-radius: var(--toggle-height);
+  display: inline-block;
+  cursor: pointer;
+}
+.toggle::before {
+  position: absolute;
+  width: var(--toggle-dot);
+  height: var(--toggle-dot);
+  top: 1px;
+  content: '';
+  border-radius: var(--toggle-height);
+}
+.toggle-off {
+  background-color: rgb(var(--toggle-off-bg));
+  border-color: rgb(var(--toggle-off-border));
+}
+.toggle-off::before {
+  background-color: rgb(var(--toggle-off-fg));
+  border-color: rgb(var(--toggle-off-fg));
+  left: 1px;
+}
+.toggle-on {
+  background-color: rgb(var(--toggle-on-bg));
+  border-color: rgb(var(--toggle-on-border));
+}
+.toggle-on::before {
+  background-color: rgb(var(--toggle-on-fg));
+  border-color: rgb(var(--toggle-on-fg));
+  right: 1px;
+}

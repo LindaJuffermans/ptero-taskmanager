@@ -1,0 +1,82 @@
+.body {
+  background: rgb(var(--body-bg));
+}
+
+.header {
+  height: var(--header-height);
+  padding: 0 15px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: rgb(var(--header-bg));
+  box-shadow: rgba(0, 0, 0, .10);
+ 
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.main {
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+.topLeft {
+  width: 100%;
+  height: 100%;
+  padding: var(--pane-offset) 0 var(--pane-offset) var(--pane-offset);
+}
+.topRight {
+  width: 100%;
+  height: 100%;
+  padding: var(--pane-offset) 0 var(--pane-offset) var(--pane-offset);
+}
+.bottom {
+  width: 100%;
+  height: 100%;
+  padding: var(--pane-offset) 0 var(--pane-offset) var(--pane-offset);
+}
+
+.sashWrapHorizontal {
+  height: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: rgba(var(--header-bg), 0.50);
+}
+.sashWrapVertical {
+  width: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(var(--header-bg), 0.50);
+}
+
+.sashWrapHorizontal .line {
+  display: block;
+  height: 3px;
+  width: 100%;
+  transition: background-color 0.5s ease-in-out;
+}
+
+.sashWrapVertical .line {
+  display: block;
+  height: 100%;
+  width: 3px;
+  transition: background-color 0.5s ease-in-out;
+}
+
+.inactive .line {
+  background: transparent;
+}
+
+.active .line {
+  background: rgb(var(--header-fg));
+}
