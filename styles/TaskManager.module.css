@@ -11,50 +11,12 @@
   flex: 1 1 100%;
 }
 
-.taskManager button {
-  flex: 1 0 var(--icon-size);
-
-  font-size: var(--header-fsize);
-  font-weight: var(--header-fweight);
-  color: rgb(var(--icon-fg));
-  background-color: rgb(var(--icon-bg));
-  border-radius: 10px 0 0 0;
-
-  height: var(--icon-size);
-  width: var(--icon-size);
-  margin: 0 0 0 1px;
-
-  border-left: 1px solid transparent;
-
-  cursor: pointer;
-  outline: none;
-}
-.taskManager button::before {
-  font-size: var(--icon-fsize);
-  font-weight: var(--icon-fweight);
-}
-.taskManager button:hover {
-  color: rgb(var(--icon-hover-fg));
-  background-color: rgb(var(--icon-hover-bg));
-}
-.taskManager button:active {
-  color: rgb(var(--icon-click-fg));
-  background-color: rgb(var(--icon-click-bg));
-}
-.taskManager button.warning:hover {
-  color: rgb(var(--icon-bg));
-  background: red;
-}
-.taskManager button.warning:active {
-  color: rgb(var(--icon-click-fg));
-  background: red;
-}
-.taskManager button.add {
-  width: 100%;
+button.add {
+  width: 100%
 }
 
 .taskManager ol.list {
-  margin-top: 8px;
+  margin-top: 1px;
 }
 
 /* A single task in the Taskmanager */

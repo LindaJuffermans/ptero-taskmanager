@@ -1,100 +1,115 @@
-import * as TaskUI from '@/components/TaskManager/TaskUI'
+import * as taskUI from '@/components/TaskManager/TaskUI'
+import * as taskRun from '@/lib/taskRun'
 
 /**
  * All the different tasks that can be executed.
  * taskname: {
  *   label: string,
  *   component: JSX.Element,
+ *   method: () => {}
  * }
  */
-export const taskInformation = {
-  'PowerStart': {
-    label: 'Start the server',
-    component: TaskUI.PowerStart,
-  },
-  'PowerStop': {
-    label: 'Stop the server',
-    component: TaskUI.PowerStop,
-  },
-  'ScheduleActivate': {
-    label: 'Activate a schedule',
-    component: TaskUI.ScheduleActivate,
-  },
-  'ScheduleDeactivate': {
-    label: 'Deactivate a schedule',
-    component: TaskUI.ScheduleDeactivate,
-  },
-  'FilePull': {
-    label: 'Pull a remote file',
-    component: TaskUI.FilePull,
-  },
-  'FileDelete': {
-    label: 'Delete a file',
-    component: TaskUI.FileDelete,
-  },
-  'FileDecompress': {
-    label: 'Extract a file',
-    component: TaskUI.FileDecompress,
-  },
-  'FileCompress': {
-    label: 'Archive a folder',
-    component: TaskUI.FileCompress,
-  },
-  'StartupUpdate': {
-    label: 'Update a startup variable',
-    component: TaskUI.StartupUpdate,
-  },
-  'StartupReinstall': {
-    label: 'Reinstall the server',
-    component: TaskUI.StartupReinstall,
-  },
-  'ServerSuspend': {
-    label: 'Suspend the server',
-    component: TaskUI.ServerSuspend,
-  },
-  'ServerUnsuspend': {
-    label: 'Unsuspend the server',
-    component: TaskUI.ServerUnsuspend,
-  },
+export const taskLabel = {
+  'PowerStart': 'Start the server',
+  'PowerStop': 'Stop the server',
+  'ScheduleActivate': 'Activate a schedule',
+  'ScheduleDeactivate': 'Deactivate a schedule',
+  'FilePull': 'Pull a remote file',
+  'FileDelete': 'Delete a file',
+  'FileDecompress': 'Extract a file',
+  'FileCompress': 'Archive a folder',
+  'StartupUpdate': 'Update a startup variable',
+  'StartupReinstall': 'Reinstall the server',
+  'ServerSuspend': 'Suspend the server',
+  'ServerUnsuspend': 'Unsuspend the server',
 }
 
-/* Type based on the keys of taskInformation */
-type TaskInformationKey = keyof typeof taskInformation
-
-/* Predicate to verify if the provided string is a valid key for taskInformation */
-const isTaskInformationKey = (key: string): key is TaskInformationKey => {
-  return key in taskInformation
-}
+type TaskKey = keyof typeof taskLabel
 
 /**
- * Returns the task information matching the provided taskName
- * @param {string} taskName The name of the task
- * @returns {object} The task information
+ * The types of tasks and their properties used in UI and task running
  */
-export const getTaskInformation = (taskName: string) => {
-  if (isTaskInformationKey(taskName)) {
-    return taskInformation[taskName]
-  } else {
-    return {
-      label: 'Unknown',
-      component: TaskUI.Noop
-    }
+export type PowerStartTask = {
+  taskName: 'PowerStart',
+  properties: {
+    wait?: boolean,
   }
 }
-
-type Task = {
-  taskName: string,
-  properties: {},
+export type PowerStopTask = {
+  taskName: 'PowerStop',
+  properties: {
+    wait?: boolean,
+    killTimeout?: string,
+  }
 }
-export type taskList = Task[]
+export type ScheduleActivateTask = {
+  taskName: 'ScheduleActivate',
+  properties: {
+    scheduleName?: string,
+  }
+}
+export type ScheduleDeactivateTask = {
+  taskName: 'ScheduleDeactivate',
+  properties: {
+    scheduleName?: string,
+  }
+}
+export type FilePullTask = {
+  taskName: 'FilePull',
+  properties: {
+    sourceUrl?: string,
+    targetFile?: string,
+  }
+}
+export type FileDeleteTask = {
+  taskName: 'FileDelete',
+  properties: {
+    targetFile?: string,
+  }
+}
+export type FileDecompressTask = {
+  taskName: 'FileDecompress',
+  properties: {
+    sourceFile?: string,
+    targetFolder?: string,
+  }
+}
+export type FileCompressTask = {
+  taskName: 'FileCompress',
+  properties: {
+    targetFolder?: string,
+  }
+}
+export type StartupUpdateTask = {
+  taskName: 'StartupUpdate',
+  properties: {
+    variableName?: string,
+    value?: string,
+  }
+}
+export type StartupReinstallTask = {
+  taskName: 'StartupReinstall',
+  properties: {}
+}
+export type ServerSuspendTask = {
+  taskName: 'ServerSuspend',
+  properties: {}
+}
+export type ServerUnsuspendTask = {
+  taskName: 'ServerUnsuspend',
+  properties: {}
+}
+
+export type Task = PowerStartTask | PowerStopTask | ScheduleActivateTask | ScheduleDeactivateTask | FilePullTask | FileDeleteTask | FileDecompressTask | FileCompressTask | StartupUpdateTask | StartupReinstallTask | ServerSuspendTask | ServerUnsuspendTask
+export type TaskList = Task[]
 
 type TaskHandlerSet = {
   action: 'set',
-  taskList: Task[],
+  taskList: TaskList,
 }
 type TaskHandlerAdd = {
   action: 'add',
-  taskName: string,
+  taskName: TaskKey,
 }
 type TaskHandlerDelete = {
   action: 'delete',
@@ -103,7 +118,7 @@ type TaskHandlerDelete = {
 type TaskHandlerUpdate = {
   action: 'update',
   index: number,
-  properties: {},
+  task: Task,
 }
 type TaskHandlerUp = {
   action: 'up',
@@ -113,9 +128,9 @@ type TaskHandlerDown = {
   action: 'down',
   index: number,
 }
-export type taskHandlerType = TaskHandlerSet | TaskHandlerAdd | TaskHandlerDelete | TaskHandlerUpdate | TaskHandlerUp | TaskHandlerDown
+export type TaskHandler = TaskHandlerSet | TaskHandlerAdd | TaskHandlerDelete | TaskHandlerUpdate | TaskHandlerUp | TaskHandlerDown
 
-export const taskListHandler = (taskList: taskList, data: taskHandlerType): taskList => {
+export function taskListHandler(taskList: TaskList, data: TaskHandler): TaskList {
   if (data.action === 'set') {
     return data.taskList
   }
@@ -128,12 +143,7 @@ export const taskListHandler = (taskList: taskList, data: taskHandlerType): task
     return _taskList
   }
   if (data.action === 'update') {
-    return taskList.map((_task: Task, _index: number) => {
-      if (_index === data.index) {
-        _task.properties = data.properties
-      }
-      return _task
-    })
+    return taskList.map((_task: Task, _index: number) => (_index === data.index) ? data.task : _task)
   }
   if (data.action === 'up') {
     const _taskList = taskList.slice(0)
@@ -155,6 +165,7 @@ export const taskListHandler = (taskList: taskList, data: taskHandlerType): task
   }
   return taskList
 }
+
 
 export type LogMessageType = 'info' | 'error' | 'completed'
 type LogMessage = {
@@ -189,7 +200,7 @@ const logListEntry = (serverId: string) => {
   }
 }
 
-export const taskLogHandler = (logList: LogList, data: LogHandlerType) => {
+export const taskLogHandler = (logList: LogList, data: LogHandlerType): LogList => {
   if (data.action === 'clear') {
     return [] as LogList
   }

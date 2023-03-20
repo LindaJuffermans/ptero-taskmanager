@@ -1,14 +1,15 @@
 import { runListHandler, ServerRunHandler } from '@/lib/servers'
+import { TaskHandler, TaskList, taskListHandler } from '@/lib/tasks'
 import { IClientToServerEvents, IServerToClientEvents, openAllPteroConnections } from '@/pages/api/socket'
 
-import { useEffect, useState, createContext, useReducer, Dispatch } from 'react'
+import { useEffect, useState, createContext, useReducer, Dispatch, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
-
 import fs from 'fs'
 import YAML from 'yaml'
 import Head from 'next/head'
 
 import { Body } from '@/components/App/Body'
+import { Dialog, DialogReference } from '@/components/Dialog'
 
 import 'split-pane-react/esm/themes/default.css'
 
@@ -29,16 +30,20 @@ export type ConfigurationServer = {
   node: string,
 }
 
-type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEvents>
+export type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEvents>
 
 export const LocalSocketContext = createContext<LocalClientSocket | null>(null)
+export const TaskListContext = createContext<[TaskList, Dispatch<TaskHandler> | null]>([[], null])
 export const RunListContext = createContext<[Set<string> | null, Dispatch<ServerRunHandler> | null]>([null, null])
 
 type AppProps = {
   categories: ConfigurationCategoryList,
 }
 export default function App(props: AppProps) {
+  const cannotExecuteReference = useRef<DialogReference>(null);
+  const confirmExecuteReference = useRef<DialogReference>(null);
   const [socket, setSocket] = useState<LocalClientSocket | null>(null)
+  const [taskList, taskDispatcher] = useReducer(taskListHandler, [])
   const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>())
 
   useEffect(() => {
@@ -51,7 +56,16 @@ export default function App(props: AppProps) {
   }, [])
 
   const openSocket = async () => {
-    doOpenSocket()
+    if (socket) {
+      return
+    }
+
+    await fetch('/api/socket')
+    const _socket = io()
+    setSocket(_socket)
+
+    // _socket.on('connect', () => { })
+    // _socket.onAny((eventName: string, ...args) => {  })
   }
 
   const closeSocket = () => {
@@ -62,22 +76,32 @@ export default function App(props: AppProps) {
     }
   }
 
-  const doOpenSocket = async () => {
-    console.log(`doOpenSocket`, socket)
-    if (socket) {
+  const runTasks = () => {
+    if (!runList.size || !taskList.length) {
+      if (cannotExecuteReference.current) {
+        cannotExecuteReference.current.openDialog()
+      }
       return
     }
+    if (confirmExecuteReference.current) {
+      confirmExecuteReference.current.openDialog()
+    }
+  }
 
-    await fetch('/api/socket')
-    const _socket = io()
-    console.log(`fetched`, _socket)
-    setSocket(_socket)
-
-    _socket.on('connect', () => {
-      console.log(`App: Client connected`)
+  const runTasksConfirmed = () => {
+    const destructuredTaskList = taskList.map(task => {
+      return {taskName: task.taskName, ...task.properties}
     })
-
-    // _socket.onAny((eventName: string, ...args) => {  })
+    const apiBody = {
+      servers: Array.from(runList),
+      tasks: destructuredTaskList,
+    }
+    console.info(`fetch /api/run`, JSON.stringify(apiBody))
+    fetch(`/api/run`, {
+      method: 'POST',
+      body: JSON.stringify(apiBody),
+    })
+    confirmExecuteReference.current?.closeDialog()
   }
 
   return (
@@ -94,10 +118,41 @@ export default function App(props: AppProps) {
         <link rel="shortcut icon" href="/favicons/favicon.ico" />
       </Head>
       <LocalSocketContext.Provider value={socket}>
-        <RunListContext.Provider value={[runList, runListDispatcher]}>
-          <Body categories={props.categories} />
-        </RunListContext.Provider>
+        <TaskListContext.Provider value={[taskList, taskDispatcher]}>
+          <RunListContext.Provider value={[runList, runListDispatcher]}>
+            <Body categories={props.categories} onExecute={runTasks} />
+          </RunListContext.Provider>
+        </TaskListContext.Provider>
       </LocalSocketContext.Provider>
+      <Dialog id='cannotExecute' ref={cannotExecuteReference}>
+        <h2>
+          <p>Error</p>
+          <button className='fas fa-window-close' title='Close' onClick={cannotExecuteReference.current?.closeDialog}/>
+        </h2>
+        <p style={{width:'80px'}}>
+          You have selected to run {taskList.length} task(s) on {runList.size} server(s).<br />
+          <br />
+          You cannot run this.
+        </p>
+        <nav>
+          <button title='OK' onClick={cannotExecuteReference.current?.closeDialog}>OK</button>
+        </nav>
+      </Dialog>
+      <Dialog id='confirmExecute' ref={confirmExecuteReference}>
+        <h2>
+          <p>Are you sure?</p>
+          <button className='fas fa-window-close' title='Close' onClick={confirmExecuteReference.current?.closeDialog}/>
+        </h2>
+        <p style={{width:'80px'}}>
+          Do you really want to execute {taskList.length} task(s) on {runList.size} server(s)?<br />
+          <br />
+          Once it has started running you cannot abort.
+        </p>
+        <nav>
+          <button title='cancel' onClick={confirmExecuteReference.current?.closeDialog}>Cancel</button>
+          <button title='OK' onClick={runTasksConfirmed} className='warning'>OK</button>
+        </nav>
+      </Dialog>
     </>
   )
 }

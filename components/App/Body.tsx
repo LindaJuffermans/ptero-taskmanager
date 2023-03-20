@@ -29,6 +29,7 @@ const sashRenderVertical = (_: number, active: boolean) => {
 
 export type BodyProps = {
   categories: ConfigurationCategoryList,
+  onExecute: () => void,
 }
 
 export const Body = (props: BodyProps) => {
@@ -48,7 +49,7 @@ export const Body = (props: BodyProps) => {
                 <ServerList categories={props.categories} />
               </div>
               <div key='topRight' className={styles['topRight']}>
-                <TaskManager />
+                <TaskManager onExecute={props.onExecute} />
               </div>
             </SplitPane>
           </div>

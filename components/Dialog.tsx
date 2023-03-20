@@ -1,6 +1,4 @@
-import { forwardRef, Ref, useImperativeHandle, useRef } from 'react';
-
-import styles from '@/styles/Dialog.module.css'
+import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 export type DialogReference = {
   openDialog: () => void,
@@ -12,7 +10,7 @@ type DialogProps = {
   children: React.ReactNode,
 }
 export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<DialogReference>) => {
-  const dialogReference = useRef<HTMLDivElement>(null);
+  const dialogContainerReference = useRef<HTMLDivElement>(null);
 
   const getDialogElement = (): HTMLDialogElement | null => {
     if (document) {
@@ -23,10 +21,11 @@ export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<Dialo
 
   const clickOutside = (event: MouseEvent) => {
     const dialogElement = getDialogElement()
-    if (dialogElement && dialogReference.current && !dialogReference.current.contains(event.target as Element)) {
+    if (dialogElement && dialogContainerReference.current && !dialogContainerReference.current.contains(event.target as Element)) {
       dialogElement.close()
     }
   }
+
   useImperativeHandle(parentReference, () => {
     return {
       openDialog() {
@@ -48,15 +47,10 @@ export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<Dialo
   }, []);
 
   return (
-    <dialog id={props.id} className={styles['dialog']}>
-      <div ref={dialogReference}>
+    <dialog id={props.id}>
+      <div ref={dialogContainerReference}>
         {props.children}
       </div>
     </dialog>    
   )
 })
-
-
-// export const Alert = () => {
-   
-// }

@@ -1,4 +1,4 @@
-import { pteroSocketWrapper, pteroWebsocket, PteroWrapperEvents } from '@/lib/pterodactyl'
+import { PteroConnectionWrapper, pteroWebsocket, PteroWrapperEvents } from '@/lib/pterodactyl'
 import { LogMessageType } from '@/lib/tasks'
 
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -68,16 +68,15 @@ export default function SocketHandler(request: NextApiRequest, response: INextAp
 }
 
 const openPteroConnection = (serverId: string) => {
-  const pteroSocket: pteroSocketWrapper | undefined = pteroWebsocket(serverId)
+  const pteroSocket: PteroConnectionWrapper | undefined = pteroWebsocket(serverId)
   if (pteroSocket === undefined) {
     console.error(`Unable to get socket for ${serverId}`)
     return;
   }
-  
 
-  pteroSocket.addEventListener('onStatsMessage', (...args: PteroWrapperEvents['onStatsMessage']) => {
+  pteroSocket.addEventListener('onStatsMessage', (event: PteroWrapperEvents['onStatsMessage']) => {
     if (global.ioSocket !== undefined) {
-      global.ioSocket.sockets.emit('serverStatus', serverId, args[0].state, args[0].uptime, args[0].cpu_absolute, args[0].memory_bytes)
+      global.ioSocket.sockets.emit('serverStatus', serverId, event.state, event.uptime, event.cpu_absolute, event.memory_bytes)
     }
   })
 }

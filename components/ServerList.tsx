@@ -17,10 +17,6 @@ export const ServerList = (props: ServerListProps) => {
   const socket = useContext(LocalSocketContext)
 
   useEffect(() => {
-    console.info('ServerList', props.categories)
-  }, [])
-
-  useEffect(() => {
     socket?.on('serverStatus', (serverId: string, state: string, upTime: number, cpu: number, memory: number) => {
       statusMapDispatcher({
         action: 'update',

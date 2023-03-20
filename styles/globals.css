@@ -182,3 +182,135 @@ ol {
   margin: 0;
   padding: 0;
 }
+
+
+/* ========================================================================= */
+/* Buttons are generic                                                       */
+/* ========================================================================= */
+button {
+  flex: 1 0 var(--icon-size);
+
+  font-size: var(--header-fsize);
+  font-weight: var(--header-fweight);
+  color: rgb(var(--icon-fg));
+  background-color: rgb(var(--icon-bg));
+  border-radius: 10px 0 0 0;
+
+  height: var(--icon-size);
+  width: var(--icon-size);
+  margin: 0 0 0 1px;
+
+  border-left: 1px solid transparent;
+
+  cursor: pointer;
+  outline: none;
+}
+button::before {
+  font-size: var(--icon-fsize);
+  font-weight: var(--icon-fweight);
+}
+button:hover {
+  color: rgb(var(--icon-hover-fg));
+  background-color: rgb(var(--icon-hover-bg));
+}
+button:active {
+  color: rgb(var(--icon-click-fg));
+  background-color: rgb(var(--icon-click-bg));
+}
+button.warning:hover {
+  color: rgb(var(--icon-bg));
+  background: red;
+}
+button.warning:active {
+  color: rgb(var(--icon-click-fg));
+  background: red;
+}
+
+/* ========================================================================= */
+/* The dialog is shared across components as well                            */
+/* ========================================================================= */
+dialog[open] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(var(--input-focus-bg), 0.5);
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+dialog[open] div {
+  position: relative;
+  background: rgb(var(--header-bg));
+  padding: 2px;
+  border-radius: 20px 0 0 0;
+  /* horizontal-offset vertical-offset blur-radius [spread-radius] color */
+  box-shadow: 0 0 10px 10px rgba(var(--header-bg), .50);
+}
+
+dialog h2 {
+  background: transparent;
+}
+
+dialog h2 p {
+  flex: 1 1 100%;
+  display: flex;
+  justify-content: center;
+}
+
+dialog div > p {
+  top: 30px;
+  left: 0;
+  min-width: 300px;
+  min-height: 100px;
+  padding: 20px 10px;
+  z-index: 900;
+
+  color: rgb(var(--icon-fg));
+  background-color: rgb(var(--icon-hover-bg));
+
+  margin: 2px 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+dialog ul {
+  list-style: none;
+  top: 30px;
+  left: 0;
+  min-width: 300px;
+  padding: 0;
+  z-index: 900;
+}
+dialog ul li {
+  font-size: var(--info-fsize);
+  font-weight: var(--info-fweight);
+  white-space: nowrap;  
+  color: rgb(var(--icon-hover-fg));
+  padding: 0 10px;
+  margin: 1px 0 0 0;
+  height: 32px;
+  background-color: rgb(var(--icon-hover-bg));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+dialog ul li:hover {
+  color: rgb(var(--icon-hover-bg));
+  background-color: rgb(var(--icon-hover-fg));
+}
+dialog ul p {
+  height: 30px;
+}
+dialog nav {
+  background: transparent;
+  display: flex;
+  margin: 2px 0 0 0;
+}

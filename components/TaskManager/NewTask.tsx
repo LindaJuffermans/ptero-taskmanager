@@ -2,16 +2,17 @@ import { taskInformation } from '@/lib/tasks';
 
 import { useContext, useRef } from 'react';
 
+import { TaskListContext } from '@/pages';
 import { Dialog, DialogReference } from '@/components/Dialog';
-import { TaskListContext } from '@/components/TaskManager';
 
 import styles from '@/styles/TaskManager.module.css'
 
 export const NewTask = () => {
   const taskDialogReference = useRef<DialogReference>(null);
-  const taskDispatcher = useContext(TaskListContext)
+  const [taskList, taskDispatcher] = useContext(TaskListContext)
+
   if (taskDispatcher === null) {
-    return <h4>No taskDispatcher</h4>
+    return <p>Loading...</p>
   }
 
   const openDialog = () => {
@@ -21,6 +22,9 @@ export const NewTask = () => {
   }
   
   const doAdd = (taskName: string) => {
+    if (!taskDispatcher) {
+      return
+    }
     taskDispatcher({
       'action': 'add',
       'taskName': taskName
