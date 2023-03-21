@@ -5,7 +5,7 @@ import YAML from 'yaml';
 import Head from 'next/head';
 
 import { runListHandler, ServerRunHandler } from '@/lib/servers';
-import { TaskHandler, TaskList, taskListHandler } from '@/lib/tasks';
+import { LogList, LogMessageType, TaskHandler, TaskList, taskListHandler, taskLogHandler } from '@/lib/tasks';
 import { IClientToServerEvents, IServerToClientEvents, openAllPteroConnections } from '@/pages/api/socket';
 import { Body } from '@/components/App/Body';
 import { Dialog, DialogReference } from '@/components/Dialog';
@@ -33,6 +33,7 @@ export type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEve
 
 export const LocalSocketContext = createContext<LocalClientSocket | null>(null);
 export const TaskListContext = createContext<[TaskList, Dispatch<TaskHandler> | null]>([[], null]);
+export const LogListContext = createContext<LogList>([]);
 export const RunListContext = createContext<[Set<string> | null, Dispatch<ServerRunHandler> | null]>([null, null]);
 
 type AppProps = {
@@ -44,6 +45,7 @@ export default function App(props: AppProps) {
   const [socket, setSocket] = useState<LocalClientSocket | null>(null);
   const [taskList, taskDispatcher] = useReducer(taskListHandler, []);
   const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>());
+  const [logList, logListHandler] = useReducer(taskLogHandler, []);
 
   useEffect(() => {
     if (!socket || !socket.connected) {
@@ -63,8 +65,24 @@ export default function App(props: AppProps) {
     const _socket = io();
     setSocket(_socket);
 
+    _socket.on('taskStatus', (serverId: string, type: LogMessageType, message: string) => {
+      logListHandler({
+        action: 'add',
+        serverId,
+        type,
+        message,
+      });
+    });
+
     // _socket.on('connect', () => { });
-    // _socket.onAny((eventName: string, ...args) => {  });
+    // _socket.on('serverStatus', (serverId: string, type: LogMessageType, message: string = '') => {
+      // logTask(serverId, type, message);
+    // });
+    /*
+    _socket.onAny((eventName: string, ...args) => {
+      console.log(`${eventName}`, ...args);
+    });
+    */
   };
 
   const closeSocket = () => {
@@ -88,12 +106,13 @@ export default function App(props: AppProps) {
   };
 
   const runTasksConfirmed = () => {
-    const destructuredTaskList = taskList.map(task => {
-      return {taskName: task.taskName, ...task.properties};
+    logListHandler({
+      action: 'init',
+      serverIdList: Array.from(runList),
     });
     const apiBody = {
       servers: Array.from(runList),
-      tasks: destructuredTaskList,
+      tasks: taskList,
     };
     console.info(`fetch /api/run`, JSON.stringify(apiBody));
     fetch(`/api/run`, {
@@ -119,7 +138,9 @@ export default function App(props: AppProps) {
       <LocalSocketContext.Provider value={socket}>
         <TaskListContext.Provider value={[taskList, taskDispatcher]}>
           <RunListContext.Provider value={[runList, runListDispatcher]}>
-            <Body categories={props.categories} onExecute={runTasks} />
+            <LogListContext.Provider value={logList}>
+              <Body categories={props.categories} onExecute={runTasks} />
+            </LogListContext.Provider>
           </RunListContext.Provider>
         </TaskListContext.Provider>
       </LocalSocketContext.Provider>

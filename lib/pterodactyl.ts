@@ -14,7 +14,7 @@ import { Configuration, LocalClientSocket } from '@/pages/index';
 //   event: 'status',
 //   args: string,
 // }
-type PteroSocketEventStatusArguments = {
+export type PteroSocketEventStatusArguments = {
   memory_bytes: number,
   memory_limit_bytes: number,
   cpu_absolute: number,
@@ -105,7 +105,7 @@ const pteroApiRequestHeaders = (additionalHeaders = {}) => {
 };
 
 export class PteroConnectionWrapper {
-  #serverId: string;
+  serverId: string = '';
 
   #eventListeners: PteroWrapperEventsSets = {
     onConsoleMessage: new Set<PteroWrapperEventsCallbacks['onConsoleMessage']>(),
@@ -127,7 +127,7 @@ export class PteroConnectionWrapper {
    * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
    */
   constructor(serverId: string) {
-    this.#serverId = serverId;
+    this.serverId = serverId;
     (async() => {
       await this.requestWebsocketDetails();
       this.initSocket();
@@ -169,7 +169,7 @@ export class PteroConnectionWrapper {
   }
 
   private apiCall(_method: 'GET' | 'POST' | 'PUT', _url: string, _headers: {} = {}, _body: {} = {}) {
-    const requestUrl: string = 'https://' + config.panelDomain + _url.replaceAll('%s', this.#serverId);
+    const requestUrl: string = 'https://' + config.panelDomain + _url.replaceAll('%s', this.serverId);
     const requestOptions: {method: string, headers: {}, body? : string} = {
       method: _method,
       headers: pteroApiRequestHeaders(_headers),
@@ -191,8 +191,9 @@ export class PteroConnectionWrapper {
    */
   private async requestWebsocketDetails() {
     this.#pteroWebSocketDetails = {} as PteroWebSocketDetailsType;
-    const jsonResponse = await this.apiGet(`/api/client/servers/${this.#serverId}/websocket`);
+    const jsonResponse = await this.apiGet(`/api/client/servers/${this.serverId}/websocket`);
     this.#pteroWebSocketDetails = jsonResponse.data || {} as PteroWebSocketDetailsType;
+    console.log(`Got token for ${this.serverId}`);
   }
 
   private async initSocket() {
@@ -200,7 +201,7 @@ export class PteroConnectionWrapper {
       await this.requestWebsocketDetails();
     }
     if (!this.#pteroWebSocketDetails?.socket) {
-      throw Error(`Unable to get websocket details for ${this.#serverId}`);
+      throw Error(`Unable to get websocket details for ${this.serverId}`);
     }
 
     try {
@@ -232,7 +233,6 @@ export class PteroConnectionWrapper {
 
   async sendSocketToken() {
     if (this.#pteroWebSocket && this.#pteroWebSocketDetails && this.#pteroWebSocketDetails.token) {
-      console.info('sendSocketToken');
       this.#pteroWebSocket.send(
         JSON.stringify({
           event: 'auth',
@@ -247,7 +247,7 @@ export class PteroConnectionWrapper {
   private async onTokenExpire() {
     await this.requestWebsocketDetails();
     if (!this.#pteroWebSocketDetails?.socket) {
-      throw Error(`Unable to get websocket details for ${this.#serverId}`);
+      throw Error(`Unable to get websocket details for ${this.serverId}`);
     }
     this.sendSocketToken();
   }

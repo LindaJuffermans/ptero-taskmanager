@@ -45,7 +45,7 @@ export const Body = (props: BodyProps) => {
           <div key='top' className={styles['top']}>
             <SplitPane split='vertical' sizes={verticalSplit} onChange={setVerticalSplit} sashRender={sashRenderVertical}>
               <div key='topLeft' className={styles['topLeft']}>
-                <ServerList categories={props.categories} />
+                <ServerList categories={[...props.categories]} />
               </div>
               <div key='topRight' className={styles['topRight']}>
                 <TaskManager onExecute={props.onExecute} />
@@ -53,7 +53,7 @@ export const Body = (props: BodyProps) => {
             </SplitPane>
           </div>
           <div key='bottom' className={styles['bottom']}>
-            <TaskRun />
+            <TaskRun categories={[...props.categories]} />
           </div>
         </SplitPane>
       </main>

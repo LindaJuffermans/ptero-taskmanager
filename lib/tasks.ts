@@ -188,10 +188,21 @@ export type LogMessageType =
   | 'info'
   | 'error'
   | 'completed';
-type LogMessage = {
-  type: LogMessageType,
+type LogMessageInfo = {
+  type: 'info',
   message: string,
 };
+type LogMessageError = {
+  type: 'error',
+  message: string,
+};
+type LogMessageCompleted = {
+  type: 'completed',
+};
+type LogMessage =
+  | LogMessageInfo
+  | LogMessageError
+  | LogMessageCompleted;
 type ServerLog = {
   serverId: string,
   logs: LogMessage[],
@@ -238,16 +249,17 @@ export const taskLogHandler = (logList: LogList, data: LogHandlerType): LogList 
     return _logList;
   }
   if (data.action === 'add') {
+    // console.info('logList:', logList);
     const targetIndex = logList.findIndex(log => log.serverId === data.serverId);
     const targetLog = targetIndex === -1 ? logListEntry(data.serverId) : logList[targetIndex];
-    if (!targetLog) {
-      return logList;
-    }
-    targetLog.logs.push({
+    targetLog!.logs.push({
       type: data.type,
       message: data.message,
     });
-    return logList.map((log: ServerLog, index: number) => index === targetIndex ? targetLog : log);
+    if (targetIndex === -1) {
+      return [...logList, targetLog!];
+    }
+    return logList.map((log: ServerLog, index: number) => index === targetIndex ? targetLog! : log);
   }
   return logList;
 };

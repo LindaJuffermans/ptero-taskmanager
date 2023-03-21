@@ -1,4 +1,4 @@
-import { FileCompressTask, FileDecompressTask, FileDeleteTask, FilePullTask, PowerStartTask, PowerStopTask, ScheduleActivateTask, ScheduleDeactivateTask, ServerSuspendTask, ServerUnsuspendTask, StartupReinstallTask, StartupUpdateTask } from '@/lib/tasks';
+import { FileCompressTask, FileDecompressTask, FileDeleteTask, FilePullTask, PowerStartTask, PowerStopTask, ScheduleActivateTask, ScheduleDeactivateTask, ServerSuspendTask, ServerUnsuspendTask, StartupReinstallTask, StartupUpdateTask, LogMessageType } from '@/lib/tasks';
 import { PteroConnectionWrapper, pteroWebsocket } from '@/lib/pterodactyl';
 
 type BackendPowerStartTask = {
@@ -57,8 +57,10 @@ type BackendTaskList = BackendTask[];
 export const PowerStart = (pteroConnection: PteroConnectionWrapper, task: BackendPowerStartTask) => {
   return new Promise(async (resolve, reject) => {
     pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'start' });
+    logTask(pteroConnection.serverId, 'info', 'starting');
     if (task.properties.wait) {
       pteroConnection.addEventListener('onStateRunning', () => {
+        logTask(pteroConnection.serverId, 'info', 'running');
         resolve('running');
       })
     } else {
@@ -70,13 +72,16 @@ export const PowerStart = (pteroConnection: PteroConnectionWrapper, task: Backen
 export const PowerStop = (pteroConnection: PteroConnectionWrapper, task: BackendPowerStopTask) => {
   return new Promise(async (resolve, reject) => {
     pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'stop' });
+    logTask(pteroConnection.serverId, 'info', 'stopping');
     if (task.properties.wait) {
       pteroConnection.addEventListener('onStateStopped', () => {
+        logTask(pteroConnection.serverId, 'info', 'stopped');
         resolve('stopped');
       })
       if (task.properties.killTimeout && parseInt(task.properties.killTimeout) > 0) {
         setTimeout(() => {
           pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'kill' });
+          logTask(pteroConnection.serverId, 'info', 'killing');
         }, parseInt(task.properties.killTimeout) * 1000);
       }
     } else {
@@ -225,7 +230,8 @@ const runTaskListOnServer = (serverId: string, taskList: BackendTaskList) => {
   const pteroConnection = pteroWebsocket(serverId);
   return new Promise((resolve, reject) => {
     if (!pteroConnection) {
-      reject(`No connection for ${serverId}.`);
+      logTask(serverId, 'error', 'Not connected');
+      reject(`${serverId}: Not connected`);
       return;
     }
     const doNextTask = (index: number) => {
@@ -253,6 +259,7 @@ const runTaskListOnServerList = (serverList: string[], taskList: BackendTaskList
   serverList.forEach(serverId => {
     runTaskListOnServer(serverId, taskList)
       .finally(() => {
+        logTask(serverId, 'completed');
         serversCompleted++;
         if (serversCompleted === serverList.length) {
           // all done
@@ -260,3 +267,9 @@ const runTaskListOnServerList = (serverList: string[], taskList: BackendTaskList
       });
   });
 };
+
+export const logTask = (serverId: string, type: LogMessageType, message: string = '') => {
+  if (global.ioSocket !== undefined) {
+    global.ioSocket.sockets.emit('taskStatus', serverId, type, message);
+  }
+}

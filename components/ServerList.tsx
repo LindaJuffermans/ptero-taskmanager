@@ -8,7 +8,7 @@ import styles from '@/styles/ServerList.module.css';
 
 export const StatusMapContext = createContext<ServerStatusMap | null>(null);
 
-type ServerListProps = {
+export type ServerListProps = {
   categories: ConfigurationCategoryList,
 };
 export const ServerList = (props: ServerListProps) => {

@@ -4,10 +4,60 @@
   background: rgb(var(--header-bg));
   padding: 4px 4px var(--container-offset) var(--container-offset);
   border-radius: 20px 0 0 20px;
+  display: flex;
+  flex-direction: column;
 }
 .console {
   color: rgb(var(--input-focus-fg));
-  background: rgb(var(--input-focus-bg));
-  width: 100%;
-  height: 100%;
+  background-color: rgb(var(--input-bg));
+  overflow-y: auto;
+  padding: 8px;
+  min-height: calc(100% - var(--icon-size));
+}
+.console h3 {
+  font-size: calc(var(--header-fsize) * 0.70);
+  font-weight: var(--header-fweight);
+  color: rgb(var(--header-fg));
+  background-color: rgb(var(--header-bg));
+  height: calc(var(--icon-size) * 0.60);
+  border-radius: 10px 0 0 0;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.category {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-column-gap: 16px;
+  grid-row-gap:8px;
+  margin: 4px 0 8px 0;
+}
+
+.server {
+  min-width: 100px;
+}
+.server h4 {
+  font-size: var(--menu-fsize);
+  font-weight: var(--menu-fweight);
+  color: rgb(var(--menu-fg));
+  background: rgb(var(--menu-bg));
+  padding: 2px 8px;
+}
+.server p {
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  color: white;
+  background: black;
+  overflow-x: hidden;
+  padding: 2px 8px;
+}
+
+.console p.error {
+  color: red;
+}
+.console p.completed {
+  color: #99cc55
 }
