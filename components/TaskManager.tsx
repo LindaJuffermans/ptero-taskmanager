@@ -1,27 +1,26 @@
-import { taskLabel } from '@/lib/tasks'
-import { TaskListContext } from '@/pages'
+import { useEffect, useState, useContext, useRef } from 'react';
 
-import { useEffect, useState, useContext, useRef } from 'react'
+import { taskLabel } from '@/lib/tasks';
+import { TaskListContext } from '@/pages';
+import { FileCompress, FileDecompress, FileDelete, FilePull, PowerStart, PowerStop, ScheduleActivate, ScheduleDeactivate, ServerSuspend, ServerUnsuspend, StartupReinstall, StartupUpdate } from '@/components/TaskManager/TaskUI';
+import { NewTask } from '@/components/TaskManager/NewTask';
+import { Dialog, DialogReference } from '@/components/Dialog';
 
-import { FileCompress, FileDecompress, FileDelete, FilePull, PowerStart, PowerStop, ScheduleActivate, ScheduleDeactivate, ServerSuspend, ServerUnsuspend, StartupReinstall, StartupUpdate } from '@/components/TaskManager/TaskUI'
-import { NewTask } from '@/components/TaskManager/NewTask'
-import { Dialog, DialogReference } from '@/components/Dialog'
-
-import styles from '@/styles/TaskManager.module.css'
+import styles from '@/styles/TaskManager.module.css';
 
 type TaskManagerProps = {
   onExecute: () => void,
-}
+};
 export const TaskManager = (props: TaskManagerProps) => {
   const clearTasksReference = useRef<DialogReference>(null);
-  const [doRender, setDoRender] = useState(false)
-  const [taskList, taskDispatcher] = useContext(TaskListContext)
+  const [doRender, setDoRender] = useState(false);
+  const [taskList, taskDispatcher] = useContext(TaskListContext);
 
   useEffect(() => {
-    setDoRender(true)
+    setDoRender(true);
 
     if (!taskDispatcher) {
-      return
+      return;
     }
     taskDispatcher({
       action: 'set',
@@ -45,7 +44,7 @@ export const TaskManager = (props: TaskManagerProps) => {
         },
       ]
     })
-  }, [])
+  }, []);
 
   if (!doRender || !taskDispatcher) {
     return (
@@ -60,12 +59,12 @@ export const TaskManager = (props: TaskManagerProps) => {
           </h2>
         </div>
       </>
-    )
+    );
   }
 
   const deleteClick = () => {
     if (clearTasksReference.current && taskList.length) {
-      clearTasksReference.current.openDialog()
+      clearTasksReference.current.openDialog();
     }
   }
 
@@ -73,8 +72,8 @@ export const TaskManager = (props: TaskManagerProps) => {
     taskDispatcher({
       action: 'set',
       taskList: [],
-    })
-    clearTasksReference.current?.closeDialog()
+    });
+    clearTasksReference.current?.closeDialog();
   }
 
   return (
@@ -111,7 +110,7 @@ export const TaskManager = (props: TaskManagerProps) => {
                   {_task.taskName === 'ServerSuspend' && <ServerSuspend index={_index} task={_task} />}
                   {_task.taskName === 'ServerUnsuspend' && <ServerUnsuspend index={_index} task={_task} />}
                 </li>
-              )
+              );
             })
           }
         </ol>
@@ -133,5 +132,5 @@ export const TaskManager = (props: TaskManagerProps) => {
         </nav>
       </Dialog>
     </>
-  )
-}
+  );
+};

@@ -1,108 +1,107 @@
-import { runListHandler, ServerRunHandler } from '@/lib/servers'
-import { TaskHandler, TaskList, taskListHandler } from '@/lib/tasks'
-import { IClientToServerEvents, IServerToClientEvents, openAllPteroConnections } from '@/pages/api/socket'
+import { useEffect, useState, createContext, useReducer, Dispatch, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
+import fs from 'fs';
+import YAML from 'yaml';
+import Head from 'next/head';
 
-import { useEffect, useState, createContext, useReducer, Dispatch, useRef } from 'react'
-import { io, Socket } from 'socket.io-client'
-import fs from 'fs'
-import YAML from 'yaml'
-import Head from 'next/head'
+import { runListHandler, ServerRunHandler } from '@/lib/servers';
+import { TaskHandler, TaskList, taskListHandler } from '@/lib/tasks';
+import { IClientToServerEvents, IServerToClientEvents, openAllPteroConnections } from '@/pages/api/socket';
+import { Body } from '@/components/App/Body';
+import { Dialog, DialogReference } from '@/components/Dialog';
 
-import { Body } from '@/components/App/Body'
-import { Dialog, DialogReference } from '@/components/Dialog'
-
-import 'split-pane-react/esm/themes/default.css'
+import 'split-pane-react/esm/themes/default.css';
 
 export type Configuration = {
   panelDomain: string,
   clientKey: string,
   categories: ConfigurationCategoryList
-}
-export type ConfigurationCategoryList = ConfigurationCategory[]
+};
+export type ConfigurationCategoryList = ConfigurationCategory[];
 export type ConfigurationCategory = {
   name: string,
   servers: ConfigurationServerList,
-}
-type ConfigurationServerList = ConfigurationServer[]
+};
+type ConfigurationServerList = ConfigurationServer[];
 export type ConfigurationServer = {
   name: string,
   id: string,
   node: string,
-}
+};
 
-export type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEvents>
+export type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEvents>;
 
-export const LocalSocketContext = createContext<LocalClientSocket | null>(null)
-export const TaskListContext = createContext<[TaskList, Dispatch<TaskHandler> | null]>([[], null])
-export const RunListContext = createContext<[Set<string> | null, Dispatch<ServerRunHandler> | null]>([null, null])
+export const LocalSocketContext = createContext<LocalClientSocket | null>(null);
+export const TaskListContext = createContext<[TaskList, Dispatch<TaskHandler> | null]>([[], null]);
+export const RunListContext = createContext<[Set<string> | null, Dispatch<ServerRunHandler> | null]>([null, null]);
 
 type AppProps = {
   categories: ConfigurationCategoryList,
-}
+};
 export default function App(props: AppProps) {
   const cannotExecuteReference = useRef<DialogReference>(null);
   const confirmExecuteReference = useRef<DialogReference>(null);
-  const [socket, setSocket] = useState<LocalClientSocket | null>(null)
-  const [taskList, taskDispatcher] = useReducer(taskListHandler, [])
-  const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>())
+  const [socket, setSocket] = useState<LocalClientSocket | null>(null);
+  const [taskList, taskDispatcher] = useReducer(taskListHandler, []);
+  const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>());
 
   useEffect(() => {
     if (!socket || !socket.connected) {
-      openSocket()
+      openSocket();
     }
     return () => {
-      closeSocket()
+      closeSocket();
     }
-  }, [])
+  }, []);
 
   const openSocket = async () => {
     if (socket) {
-      return
+      return;
     }
 
-    await fetch('/api/socket')
-    const _socket = io()
-    setSocket(_socket)
+    await fetch('/api/socket');
+    const _socket = io();
+    setSocket(_socket);
 
-    // _socket.on('connect', () => { })
-    // _socket.onAny((eventName: string, ...args) => {  })
-  }
+    // _socket.on('connect', () => { });
+    // _socket.onAny((eventName: string, ...args) => {  });
+  };
 
   const closeSocket = () => {
     if (socket?.connected) {
-      socket.disconnect()
+      socket.disconnect();
     } else {
-      console.error(`App: Socket wasn't opened`)
+      console.error(`App: Socket wasn't opened`);
     }
-  }
+  };
 
   const runTasks = () => {
     if (!runList.size || !taskList.length) {
       if (cannotExecuteReference.current) {
-        cannotExecuteReference.current.openDialog()
+        cannotExecuteReference.current.openDialog();
       }
-      return
+      return;
     }
     if (confirmExecuteReference.current) {
-      confirmExecuteReference.current.openDialog()
+      confirmExecuteReference.current.openDialog();
     }
-  }
+  };
 
   const runTasksConfirmed = () => {
     const destructuredTaskList = taskList.map(task => {
-      return {taskName: task.taskName, ...task.properties}
-    })
+      return {taskName: task.taskName, ...task.properties};
+    });
     const apiBody = {
       servers: Array.from(runList),
       tasks: destructuredTaskList,
-    }
-    console.info(`fetch /api/run`, JSON.stringify(apiBody))
+    };
+    console.info(`fetch /api/run`, JSON.stringify(apiBody));
     fetch(`/api/run`, {
       method: 'POST',
       body: JSON.stringify(apiBody),
-    })
-    confirmExecuteReference.current?.closeDialog()
-  }
+    });
+    confirmExecuteReference.current?.closeDialog();
+  };
 
   return (
     <>
@@ -154,18 +153,18 @@ export default function App(props: AppProps) {
         </nav>
       </Dialog>
     </>
-  )
-}
+  );
+};
 
 export async function getStaticProps() {
-  const contents: Buffer = fs.readFileSync(`${process.env['SERVER_CONFIG_FILE']}`)
-  const config: Configuration = YAML.parse(`${contents}`)
-  const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat()
-  openAllPteroConnections(serverIdList)
+  const contents: Buffer = fs.readFileSync(`${process.env['SERVER_CONFIG_FILE']}`);
+  const config: Configuration = YAML.parse(`${contents}`);
+  const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat();
+  openAllPteroConnections(serverIdList);
 
   return {
     props: {
-      categories: config['categories']
+      categories: config['categories'],
     }
-  }
-}
+  };
+};

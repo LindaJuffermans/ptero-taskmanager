@@ -1,8 +1,8 @@
-import * as fs from 'fs'
-import YAML from 'yaml'
-import { WebSocket } from 'ws'
+import * as fs from 'fs';
+import YAML from 'yaml';
+import { WebSocket } from 'ws';
 
-import { Configuration, LocalClientSocket } from '@/pages/index'
+import { Configuration, LocalClientSocket } from '@/pages/index';
 
 /**
  * Ptero websocket responses
@@ -25,7 +25,7 @@ type PteroSocketEventStatusArguments = {
   state: PteroServerStateType,
   uptime: number,
   disk_bytes: number,
-}
+};
 
 // type PteroSocketEventConsoleOutput = {
 //   event: 'console output',
@@ -50,16 +50,16 @@ type PteroSocketEventStatusArguments = {
 type PteroWebSocketDetailsType = {
   token: string,
   socket: string,
-}
-export type PteroWebSocket = (serverId: string) => Promise<void>
+};
+export type PteroWebSocket = (serverId: string) => Promise<void>;
 
 
 /**
  * Pterodactyl API properties
  */
 
-type PteroPowerSignal = 'start' | 'stop' | 'restart' | 'kill'
-type PteroServerStateType = 'unknown' | 'starting' | 'running' | 'stopping' | 'offline'
+type PteroPowerSignal = 'start' | 'stop' | 'restart' | 'kill';
+type PteroServerStateType = 'unknown' | 'starting' | 'running' | 'stopping' | 'offline';
 
 
 /**
@@ -67,9 +67,9 @@ type PteroServerStateType = 'unknown' | 'starting' | 'running' | 'stopping' | 'o
  */
 type PteroWrapperEventStats = PteroSocketEventStatusArguments & {
   oldState?: string,
-}
-type PteroWrapperEventConsole = string
-export type PteroWrapperEvent = PteroWrapperEventStats | PteroWrapperEventConsole
+};
+type PteroWrapperEventConsole = string;
+export type PteroWrapperEvent = PteroWrapperEventStats | PteroWrapperEventConsole;
 // type PteroWrapperEventStatsHandler = (event : PteroWrapperEventStats) => (void | string)
 // type PteroWrapperEventConsoleHandler = (event : PteroWrapperEventConsole) => (void | string)
 // type PteroWrapperEventHandler = (event: PteroWrapperEvent) => (void | string)
@@ -81,18 +81,18 @@ export interface PteroWrapperEvents {
   onStateRunning: PteroWrapperEventStats
   onStateStopping: PteroWrapperEventStats
   onStateStopped: PteroWrapperEventStats
-}
+};
 // type PteroEventNames = keyof PteroWrapperEvents
 type PteroWrapperEventsCallbacks = {
   [K in keyof PteroWrapperEvents]: (event: PteroWrapperEvents[K]) => string | void
-}
+};
 type PteroWrapperEventsSets = {
   [K in keyof PteroWrapperEventsCallbacks]: Set<PteroWrapperEventsCallbacks[K]>
-}
+};
 
 
-const contents: Buffer = fs.readFileSync(process.cwd() + `/${process.env['SERVER_CONFIG_FILE']}`)
-const config: Configuration = YAML.parse(`${contents}`)
+const contents: Buffer = fs.readFileSync(process.cwd() + `/${process.env['SERVER_CONFIG_FILE']}`);
+const config: Configuration = YAML.parse(`${contents}`);
 
 const pteroApiRequestHeaders = (additionalHeaders = {}) => {
   const defaultHeaders = {
@@ -100,12 +100,12 @@ const pteroApiRequestHeaders = (additionalHeaders = {}) => {
     'Content-Type': `application/json`,
     'Accept': `application/json`,
     'Origin' : `${config.panelDomain}`,
-  }
+  };
   return { ...defaultHeaders, ...additionalHeaders };
-}
+};
 
 export class PteroConnectionWrapper {
-  #serverId: string
+  #serverId: string;
 
   #eventListeners: PteroWrapperEventsSets = {
     onConsoleMessage: new Set<PteroWrapperEventsCallbacks['onConsoleMessage']>(),
@@ -115,11 +115,11 @@ export class PteroConnectionWrapper {
     onStateRunning: new Set<PteroWrapperEventsCallbacks['onStateRunning']>(),
     onStateStopping: new Set<PteroWrapperEventsCallbacks['onStateStopping']>(),
     onStateStopped: new Set<PteroWrapperEventsCallbacks['onStateStopped']>(),
-  }
+  };
     
-  #pteroWebSocketDetails: PteroWebSocketDetailsType | undefined = undefined
-  #pteroWebSocket: WebSocket | undefined = undefined
-  #lastServerState: PteroServerStateType = 'unknown'
+  #pteroWebSocketDetails: PteroWebSocketDetailsType | undefined = undefined;
+  #pteroWebSocket: WebSocket | undefined = undefined;
+  #lastServerState: PteroServerStateType = 'unknown';
 
   /**
    * Creates a new instance of the class
@@ -129,8 +129,8 @@ export class PteroConnectionWrapper {
   constructor(serverId: string) {
     this.#serverId = serverId;
     (async() => {
-      await this.requestWebsocketDetails()
-      this.initSocket()
+      await this.requestWebsocketDetails();
+      this.initSocket();
     })()
   }
 
@@ -139,11 +139,9 @@ export class PteroConnectionWrapper {
    * @param {string} eventName The event, one of: onStatsMessage, onConsoleMessage, onStateChanged, onStateRunning and onStateStopped
    * @param {function} callback The function to call when the event triggers
    */
-
   addEventListener<T extends keyof PteroWrapperEventsCallbacks>(eventName: T, callback: PteroWrapperEventsCallbacks[T]) {
     this.#eventListeners[eventName].add(callback);
   }
-
 
   /**
    * Unregister a new event listener
@@ -158,35 +156,33 @@ export class PteroConnectionWrapper {
     }
   }
 
-  // GET, POST, PUT
-
   apiGet(url: string, headers: {} = {}) {
-    return this.apiCall('GET', url, headers, {})
+    return this.apiCall('GET', url, headers, {});
   }
 
   apiPost(url: string, headers: {} = {}, body: {} = {}) {
-    return this.apiCall('POST', url, headers, body)
+    return this.apiCall('POST', url, headers, body);
   }
 
   apiPut(url: string, headers: {} = {}, body: {} = {}) {
-    return this.apiCall('PUT', url, headers, body)
+    return this.apiCall('PUT', url, headers, body);
   }
 
   private apiCall(_method: 'GET' | 'POST' | 'PUT', _url: string, _headers: {} = {}, _body: {} = {}) {
-    const requestUrl: string = 'https://' + config.panelDomain + _url.replaceAll('%s', this.#serverId)
+    const requestUrl: string = 'https://' + config.panelDomain + _url.replaceAll('%s', this.#serverId);
     const requestOptions: {method: string, headers: {}, body? : string} = {
       method: _method,
       headers: pteroApiRequestHeaders(_headers),
-    }
+    };
     if (_method !== 'GET' && _body) {
-      requestOptions.body = JSON.stringify(_body)
+      requestOptions.body = JSON.stringify(_body);
     }
     return new Promise<any>((resolve: (value: unknown) => void, reject: (reason?: any) => void) => {
       fetch(requestUrl, requestOptions)
         .then(response => response.json())
         .then(json => resolve(json))
-        .catch(error => reject(error))
-    })
+        .catch(error => reject(error));
+    });
   }
 
   /**
@@ -194,25 +190,25 @@ export class PteroConnectionWrapper {
    * websocket API for the server
    */
   private async requestWebsocketDetails() {
-    this.#pteroWebSocketDetails = {} as PteroWebSocketDetailsType
-    const jsonResponse = await this.apiGet(`/api/client/servers/${this.#serverId}/websocket`)
+    this.#pteroWebSocketDetails = {} as PteroWebSocketDetailsType;
+    const jsonResponse = await this.apiGet(`/api/client/servers/${this.#serverId}/websocket`);
     this.#pteroWebSocketDetails = jsonResponse.data || {} as PteroWebSocketDetailsType;
   }
 
   private async initSocket() {
     if (!this.#pteroWebSocketDetails?.socket) {
-      await this.requestWebsocketDetails()
+      await this.requestWebsocketDetails();
     }
     if (!this.#pteroWebSocketDetails?.socket) {
-      throw Error(`Unable to get websocket details for ${this.#serverId}`)
+      throw Error(`Unable to get websocket details for ${this.#serverId}`);
     }
 
     try {
-      this.#pteroWebSocket = new WebSocket(this.#pteroWebSocketDetails.socket, {origin: `https://${config.panelDomain}`})
-      this.#pteroWebSocket.on('open', this.sendSocketToken.bind(this))
-      this.#pteroWebSocket.on('message', this.onSocketMessage.bind(this))
+      this.#pteroWebSocket = new WebSocket(this.#pteroWebSocketDetails.socket, {origin: `https://${config.panelDomain}`});
+      this.#pteroWebSocket.on('open', this.sendSocketToken.bind(this));
+      this.#pteroWebSocket.on('message', this.onSocketMessage.bind(this));
     } catch (error: any) {
-      console.error('Error', error.message)
+      console.error('Error', error.message);
     }
   }
 
@@ -220,7 +216,7 @@ export class PteroConnectionWrapper {
    * Enables using the private #eventListeners property in "keyof typeof"
    */
   private get _eventListeners() {
-    return this.#eventListeners
+    return this.#eventListeners;
   }
 
   /**
@@ -230,13 +226,13 @@ export class PteroConnectionWrapper {
    */
   private triggerEvent<T extends keyof PteroWrapperEventsCallbacks>(eventName: T, event: PteroWrapperEvents[T]) {
     this.#eventListeners[eventName].forEach((callback) => {
-      callback.call(null, event)
+      callback.call(null, event);
     })
   }
 
   async sendSocketToken() {
     if (this.#pteroWebSocket && this.#pteroWebSocketDetails && this.#pteroWebSocketDetails.token) {
-      console.info('sendSocketToken')
+      console.info('sendSocketToken');
       this.#pteroWebSocket.send(
         JSON.stringify({
           event: 'auth',
@@ -244,45 +240,44 @@ export class PteroConnectionWrapper {
         })
       )
     } else {
-      console.error(`Missing one of these:`, this.#pteroWebSocket, this.#pteroWebSocketDetails)
+      console.error(`Missing one of these:`, this.#pteroWebSocket, this.#pteroWebSocketDetails);
     }
   }
 
   private async onTokenExpire() {
-    await this.requestWebsocketDetails()
+    await this.requestWebsocketDetails();
     if (!this.#pteroWebSocketDetails?.socket) {
-      throw Error(`Unable to get websocket details for ${this.#serverId}`)
+      throw Error(`Unable to get websocket details for ${this.#serverId}`);
     }
-    this.sendSocketToken()
+    this.sendSocketToken();
   }
 
   private async onSocketMessage(data: Buffer | string, isBinary: boolean) {
-    const message: string = data.toString()
-    const socketMessage = JSON.parse(message)
+    const message: string = data.toString();
+    const socketMessage = JSON.parse(message);
     if (socketMessage.event === 'token expiring') {
-      this.onTokenExpire()
+      this.onTokenExpire();
     } else if (socketMessage.event === 'stats') {
       const statsData: PteroWrapperEventStats = JSON.parse(socketMessage.args);
-      this.triggerEvent('onStatsMessage', statsData)
-      const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}}
+      this.triggerEvent('onStatsMessage', statsData);
+      const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}};
       if (statsData.state !== this.#lastServerState) {
-        this.triggerEvent('onStateChanged', augmentedStatsData)
+        this.triggerEvent('onStateChanged', augmentedStatsData);
         if (statsData.state === 'starting') {
-          this.triggerEvent('onStateStarting', augmentedStatsData)
+          this.triggerEvent('onStateStarting', augmentedStatsData);
         } else if (statsData.state === 'running') {
-          this.triggerEvent('onStateRunning', augmentedStatsData)
+          this.triggerEvent('onStateRunning', augmentedStatsData);
         } else if (statsData.state === 'stopping') {
-          this.triggerEvent('onStateStopping', augmentedStatsData)
+          this.triggerEvent('onStateStopping', augmentedStatsData);
         } else if (statsData.state === 'offline') {
-          this.triggerEvent('onStateStopped', augmentedStatsData)
+          this.triggerEvent('onStateStopped', augmentedStatsData);
         }
       }
     } else if (socketMessage.event === 'onConsoleMessage') {
-      this.triggerEvent('onConsoleMessage', socketMessage.args)
+      this.triggerEvent('onConsoleMessage', socketMessage.args);
     }
   }
 }
-
 
 /* keep track of all websockets here */
 const _pteroWebSocketCollection: Map<string, PteroConnectionWrapper> = new Map<string, PteroConnectionWrapper>();
@@ -294,18 +289,18 @@ const _pteroWebSocketCollection: Map<string, PteroConnectionWrapper> = new Map<s
  */
 export const pteroWebsocket = (serverId: string, localClientSocket?: LocalClientSocket): PteroConnectionWrapper | undefined => {
   if (_pteroWebSocketCollection.has(serverId)) {
-    const _socket = _pteroWebSocketCollection.get(serverId)
+    const _socket = _pteroWebSocketCollection.get(serverId);
     if (_socket) {
-      return _socket
+      return _socket;
     }
   }
 
-  const _socket = new PteroConnectionWrapper(serverId)
+  const _socket = new PteroConnectionWrapper(serverId);
   if (!_socket) {
-    throw Error(`Unable to open socket for ${serverId}`)
+    throw Error(`Unable to open socket for ${serverId}`);
   }
-  _pteroWebSocketCollection.set(serverId, _socket)
-  return _socket
+  _pteroWebSocketCollection.set(serverId, _socket);
+  return _socket;
 }
 
 /**

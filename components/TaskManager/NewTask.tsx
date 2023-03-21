@@ -1,36 +1,35 @@
-import { taskInformation } from '@/lib/tasks';
-
 import { useContext, useRef } from 'react';
 
+import { TaskKey, taskLabel } from '@/lib/tasks';
 import { TaskListContext } from '@/pages';
 import { Dialog, DialogReference } from '@/components/Dialog';
 
-import styles from '@/styles/TaskManager.module.css'
+import styles from '@/styles/TaskManager.module.css';
 
 export const NewTask = () => {
   const taskDialogReference = useRef<DialogReference>(null);
-  const [taskList, taskDispatcher] = useContext(TaskListContext)
+  const [taskList, taskDispatcher] = useContext(TaskListContext);
 
   if (taskDispatcher === null) {
-    return <p>Loading...</p>
+    return <p>Loading...</p>;
   }
 
   const openDialog = () => {
     if (taskDialogReference.current) {
-      taskDialogReference.current.openDialog()
+      taskDialogReference.current.openDialog();
     }
-  }
+  };
   
-  const doAdd = (taskName: string) => {
+  const doAdd = (taskName: TaskKey) => {
     if (!taskDispatcher) {
-      return
+      return;
     }
     taskDispatcher({
       'action': 'add',
       'taskName': taskName
     });
     taskDialogReference.current?.closeDialog();
-  }
+  };
 
   return (
     <>
@@ -42,13 +41,10 @@ export const NewTask = () => {
         </h2>
         <ul>
           {
-            Object.entries(taskInformation).map(_entry => {
-              const [_name, _details] = _entry
-              return <li key={_name} onClick={() => doAdd(_name)}>{_details.label}</li>
-            })
+            Object.entries(taskLabel).map(([taskName, label]) => <li key={taskName} onClick={() => doAdd(taskName as TaskKey)}>{label}</li>)
           }
         </ul>
       </Dialog>
     </>
   );
-}
+};

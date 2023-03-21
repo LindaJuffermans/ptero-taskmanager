@@ -1,18 +1,17 @@
-import { ServerStatus } from '@/lib/servers'
+import { ChangeEvent, useContext, useEffect, useState } from 'react';
 
-import { ChangeEvent, useContext, useEffect, useState } from 'react'
+import { ServerStatus } from '@/lib/servers';
+import { ConfigurationServer, RunListContext } from '@/pages';
+import { StatusMapContext } from '@/components/ServerList';
 
-import { ConfigurationServer, RunListContext } from '@/pages'
-import { StatusMapContext } from '@/components/ServerList'
-
-import styles from '@/styles/ServerList.module.css'
+import styles from '@/styles/ServerList.module.css';
 
 const defaultStatus: ServerStatus = {
   state: 'unknown',
   upTime: 0,
   cpu: 0,
   memory: 0,
-}
+};
 
 /**
  * Renders a single server line on the page
@@ -22,18 +21,18 @@ const defaultStatus: ServerStatus = {
 type ServerProps = {
   index: number,
   server: ConfigurationServer,
-}
+};
 export const Server = (props: ServerProps) => {
-  const [status, setStatus] = useState<ServerStatus>(defaultStatus)
-  const statusMap = useContext(StatusMapContext)
-  const [runList, runListDispatcher] = useContext(RunListContext)
+  const [status, setStatus] = useState<ServerStatus>(defaultStatus);
+  const statusMap = useContext(StatusMapContext);
+  const [runList, runListDispatcher] = useContext(RunListContext);
 
   useEffect(() => {
-    const _status = statusMap?.get(props.server.id)
+    const _status = statusMap?.get(props.server.id);
     if (_status) {
-      setStatus(_status)
+      setStatus(_status);
     }
-  }, [statusMap])
+  }, [statusMap]);
 
   const updateRunList = (event: ChangeEvent<HTMLInputElement>) => {
     if (!runListDispatcher) {
@@ -43,14 +42,14 @@ export const Server = (props: ServerProps) => {
       runListDispatcher({
         action: 'add',
         serverId: props.server.id
-      })
+      });
     } else {
       runListDispatcher({
         action: 'remove',
         serverId: props.server.id
-      })
+      });
     }
-  }
+  };
 
   return (
     <li className={`${styles[status.state]}`}>
@@ -65,5 +64,5 @@ export const Server = (props: ServerProps) => {
         </label>
       </p>
     </li>
-  )
-}
+  );
+};

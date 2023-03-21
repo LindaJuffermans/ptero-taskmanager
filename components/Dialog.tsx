@@ -1,35 +1,35 @@
-import { forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, Ref, useImperativeHandle, useRef } from 'react';
 
 export type DialogReference = {
   openDialog: () => void,
   closeDialog: () => void,
-}
+};
 
 type DialogProps = {
   id: string,
   children: React.ReactNode,
-}
+};
 export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<DialogReference>) => {
   const dialogContainerReference = useRef<HTMLDivElement>(null);
 
   const getDialogElement = (): HTMLDialogElement | null => {
     if (document) {
-      return document.getElementById(props.id) as HTMLDialogElement
+      return document.getElementById(props.id) as HTMLDialogElement;
     }
     return null;
   }
 
   const clickOutside = (event: MouseEvent) => {
-    const dialogElement = getDialogElement()
+    const dialogElement = getDialogElement();
     if (dialogElement && dialogContainerReference.current && !dialogContainerReference.current.contains(event.target as Element)) {
-      dialogElement.close()
+      dialogElement.close();
     }
   }
 
   useImperativeHandle(parentReference, () => {
     return {
       openDialog() {
-        const dialogElement = getDialogElement()
+        const dialogElement = getDialogElement();
         if (dialogElement) {
           dialogElement.showModal();
           dialogElement.addEventListener('click', clickOutside);
@@ -37,7 +37,7 @@ export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<Dialo
       },
 
       closeDialog() {
-        const dialogElement = getDialogElement()
+        const dialogElement = getDialogElement();
         if (dialogElement) {
           dialogElement.removeEventListener('click', clickOutside);
           dialogElement.close();
@@ -52,5 +52,5 @@ export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<Dialo
         {props.children}
       </div>
     </dialog>    
-  )
-})
+  );
+});
