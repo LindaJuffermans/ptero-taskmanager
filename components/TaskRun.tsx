@@ -25,6 +25,10 @@ export const TaskRun = (props: ServerListProps) => {
     }
   }, [runList, props.categories]);
 
+  useEffect(() => {
+    setDoRender(true);
+  }, []);
+
   if (!doRender) {
     return (
       <>
@@ -46,21 +50,21 @@ export const TaskRun = (props: ServerListProps) => {
           {
             (!logList.length || !runList?.size)
               ? <p>No information</p>
-              : loggingCategories.map(category => {
+              : loggingCategories.map((category, index) => {
                 return (
                   <>
-                  <h3>{category.name}</h3>
-                    <div key={category.name} className={styles['category']}>
+                    <h3 key={`header${index}`}>{category.name}</h3>
+                    <div key={`category${index}`} className={styles['category']}>
                       {
                         category.servers.map(server => {
                           return (
-                            <div key={server.id} className={styles['server']}>
-                              <h4>{server.name}</h4>
+                            <div key={`server${server.id}`} className={styles['server']}>
+                              <h4 key={`header${server.id}`}>{server.name}</h4>
                               {
                                 logList.filter(serverLog => serverLog.serverId === server.id).length === 0
-                                  ? <p className={styles['info']}>No data</p>
+                                  ? <p key={`nodata${server.id}`} className={styles['info']}>No data</p>
                                   : logList.filter(serverLog => serverLog.serverId === server.id)[0]?.logs.map(
-                                    (logEntry, index) => <p key={index} className={styles[logEntry.type]}>{('message' in logEntry) ? logEntry.message : `Finished`}</p>
+                                    (logEntry, index) => <p key={`${server.id}${index}`} className={styles[logEntry.type]}>{logEntry.type === 'completed' ? `Finished` : logEntry.message}</p>
                                   )
                               }
                             </div>

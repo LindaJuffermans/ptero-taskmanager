@@ -66,12 +66,16 @@ export default function App(props: AppProps) {
     setSocket(_socket);
 
     _socket.on('taskStatus', (serverId: string, type: LogMessageType, message: string) => {
-      logListHandler({
-        action: 'add',
-        serverId,
-        type,
-        message,
-      });
+      if (serverId === '--ALL--') {
+        console.log('All running completed');
+      } else {
+        logListHandler({
+          action: 'add',
+          serverId,
+          type,
+          message,
+        });
+      }
     });
 
     // _socket.on('connect', () => { });
@@ -114,8 +118,8 @@ export default function App(props: AppProps) {
       servers: Array.from(runList),
       tasks: taskList,
     };
-    console.info(`fetch /api/run`, JSON.stringify(apiBody));
-    fetch(`/api/run`, {
+    // console.info(`fetch /api/run`, JSON.stringify(apiBody));
+    fetch(`/api/runTasks`, {
       method: 'POST',
       body: JSON.stringify(apiBody),
     });

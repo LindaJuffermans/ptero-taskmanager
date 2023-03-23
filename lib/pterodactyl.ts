@@ -53,6 +53,20 @@ type PteroWebSocketDetailsType = {
 };
 export type PteroWebSocket = (serverId: string) => Promise<void>;
 
+export type PteroScheduleAttributes = {
+  id: string,
+  name: string,
+  cron: Record<string, unknown>,
+  is_active: boolean,
+  is_processing: boolean,
+  only_when_online: boolean,
+  last_run_at: string,
+  next_run_at: string,
+  created_at: string,
+  updated_at: string,
+  relationships: Record<string, unknown>,
+};
+
 
 /**
  * Pterodactyl API properties
@@ -99,7 +113,6 @@ const pteroApiRequestHeaders = (additionalHeaders = {}) => {
     'Authorization': `Bearer ${config.clientKey}`,
     'Content-Type': `application/json`,
     'Accept': `application/json`,
-    'Origin' : `${config.panelDomain}`,
   };
   return { ...defaultHeaders, ...additionalHeaders };
 };
@@ -179,9 +192,19 @@ export class PteroConnectionWrapper {
     }
     return new Promise<any>((resolve: (value: unknown) => void, reject: (reason?: any) => void) => {
       fetch(requestUrl, requestOptions)
-        .then(response => response.json())
-        .then(json => resolve(json))
-        .catch(error => reject(error));
+        .then(response => {
+          // console.log(`${_method} ${requestUrl} done`);
+          response.json()
+            .then(json => resolve(json))
+            .catch(error => {
+              console.log(`Unable to parse JSON for ${requestUrl}: ${error.message}`);
+              reject(error.message);
+            });
+        })
+        .catch(error => {
+          console.log(`Fetch error for ${requestUrl}: ${error.message}`);
+          reject(error.message);
+        });
     });
   }
 
@@ -193,7 +216,7 @@ export class PteroConnectionWrapper {
     this.#pteroWebSocketDetails = {} as PteroWebSocketDetailsType;
     const jsonResponse = await this.apiGet(`/api/client/servers/${this.serverId}/websocket`);
     this.#pteroWebSocketDetails = jsonResponse.data || {} as PteroWebSocketDetailsType;
-    console.log(`Got token for ${this.serverId}`);
+    // console.log(`Got token for ${this.serverId}`);
   }
 
   private async initSocket() {
@@ -260,18 +283,21 @@ export class PteroConnectionWrapper {
     } else if (socketMessage.event === 'stats') {
       const statsData: PteroWrapperEventStats = JSON.parse(socketMessage.args);
       this.triggerEvent('onStatsMessage', statsData);
-      const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}};
       if (statsData.state !== this.#lastServerState) {
+        const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}};
+        console.log(`state went from ${this.#lastServerState} to ${statsData.state}`);
         this.triggerEvent('onStateChanged', augmentedStatsData);
         if (statsData.state === 'starting') {
           this.triggerEvent('onStateStarting', augmentedStatsData);
         } else if (statsData.state === 'running') {
+          console.info('onStateRunning:');
           this.triggerEvent('onStateRunning', augmentedStatsData);
         } else if (statsData.state === 'stopping') {
           this.triggerEvent('onStateStopping', augmentedStatsData);
         } else if (statsData.state === 'offline') {
           this.triggerEvent('onStateStopped', augmentedStatsData);
         }
+        this.#lastServerState = statsData.state;
       }
     } else if (socketMessage.event === 'onConsoleMessage') {
       this.triggerEvent('onConsoleMessage', socketMessage.args);
@@ -301,62 +327,4 @@ export const pteroWebsocket = (serverId: string, localClientSocket?: LocalClient
   }
   _pteroWebSocketCollection.set(serverId, _socket);
   return _socket;
-}
-
-/**
- * Start a server
- * 
- * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
- * @param wait Optionally wait for the action to complete
- * @returns 
- */
-export const pteroStartServer = async (serverId: string, wait: boolean = false) => {
-  await _changePowerState(serverId, 'start');
-  if (wait) {
-    pteroWebsocket(serverId)?.addEventListener('onStateRunning', () => 'running');
-  } else {
-    return 'starting';
-  }
-}
-
-/**
- * Shutdown a server
- * 
- * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
- * @param wait Optionally wait for the action to complete
- * @param killTimer Optionally kill the server after this many seconds
- * @returns 
- */
-export const pteroStopServer = async (serverId: string, wait: boolean = false, killTimer: string = '') => {
-  await _changePowerState(serverId, 'stop');
-  if (wait) {
-    pteroWebsocket(serverId)?.addEventListener('onStateStopped', () => 'stopped');
-
-    if (parseInt(killTimer) > 0) {
-      const onTimeout = async () => {
-        await _changePowerState(serverId, 'kill');
-      }
-      setTimeout(onTimeout, parseInt(killTimer) * 1000);
-    }
-  } else {
-    return 'stopping';
-  }
-}
-
-/**
- * @internal Posts a power command to the specified server
- * 
- * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
- * @param powerSignal The power signal to send (start, stop, restart, kill)
- * @returns 
- */
-const _changePowerState = async (serverId: string, powerSignal: PteroPowerSignal) => {
-  await fetch(`https://${config.panelDomain}/api/client/servers/${serverId}/power`, {
-    method: 'POST',
-    headers: pteroApiRequestHeaders(),
-    body: JSON.stringify({
-      signal: powerSignal
-    })
-  });
-  return true;
 }
