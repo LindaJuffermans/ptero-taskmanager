@@ -14,7 +14,7 @@ import { Configuration, LocalClientSocket } from '@/pages/index';
 //   event: 'status',
 //   args: string,
 // }
-export type PteroSocketEventStatusArguments = {
+export type PteroSocketEventStatus = {
   memory_bytes: number,
   memory_limit_bytes: number,
   cpu_absolute: number,
@@ -22,10 +22,13 @@ export type PteroSocketEventStatusArguments = {
     rx_bytes: number,
     tx_bytes: number,
   },
-  state: PteroServerStateType,
+  state: PteroServerState,
   uptime: number,
   disk_bytes: number,
 };
+type PteroSocketEventConsole = string;
+type PteroSocketEventInstallStarted = string;
+type PteroSocketEventInstallCompleted = string;
 
 // type PteroSocketEventConsoleOutput = {
 //   event: 'console output',
@@ -73,28 +76,29 @@ export type PteroScheduleAttributes = {
  */
 
 type PteroPowerSignal = 'start' | 'stop' | 'restart' | 'kill';
-type PteroServerStateType = 'unknown' | 'starting' | 'running' | 'stopping' | 'offline';
+type PteroServerState = 'unknown' | 'starting' | 'running' | 'stopping' | 'offline';
 
 
 /**
  * Pterowrapper events
  */
-type PteroWrapperEventStats = PteroSocketEventStatusArguments & {
+type PteroWrapperEventStats = PteroSocketEventStatus & {
   oldState?: string,
 };
-type PteroWrapperEventConsole = string;
-export type PteroWrapperEvent = PteroWrapperEventStats | PteroWrapperEventConsole;
+export type PteroWrapperEvent = PteroWrapperEventStats | PteroSocketEventConsole | PteroSocketEventInstallStarted | PteroSocketEventInstallCompleted;
 // type PteroWrapperEventStatsHandler = (event : PteroWrapperEventStats) => (void | string)
 // type PteroWrapperEventConsoleHandler = (event : PteroWrapperEventConsole) => (void | string)
 // type PteroWrapperEventHandler = (event: PteroWrapperEvent) => (void | string)
 export interface PteroWrapperEvents {
-  onConsoleMessage: PteroWrapperEventConsole
+  onConsoleMessage: PteroSocketEventConsole
   onStatsMessage: PteroWrapperEventStats
   onStateChanged: PteroWrapperEventStats
   onStateStarting: PteroWrapperEventStats
   onStateRunning: PteroWrapperEventStats
   onStateStopping: PteroWrapperEventStats
   onStateStopped: PteroWrapperEventStats
+  onInstallStarted: PteroSocketEventInstallStarted
+  onInstallCompleted: PteroSocketEventInstallCompleted
 };
 // type PteroEventNames = keyof PteroWrapperEvents
 type PteroWrapperEventsCallbacks = {
@@ -128,11 +132,13 @@ export class PteroConnectionWrapper {
     onStateRunning: new Set<PteroWrapperEventsCallbacks['onStateRunning']>(),
     onStateStopping: new Set<PteroWrapperEventsCallbacks['onStateStopping']>(),
     onStateStopped: new Set<PteroWrapperEventsCallbacks['onStateStopped']>(),
+    onInstallStarted: new Set<PteroWrapperEventsCallbacks['onInstallStarted']>(),
+    onInstallCompleted: new Set<PteroWrapperEventsCallbacks['onInstallCompleted']>(),
   };
     
   #pteroWebSocketDetails: PteroWebSocketDetailsType | undefined = undefined;
   #pteroWebSocket: WebSocket | undefined = undefined;
-  #lastServerState: PteroServerStateType = 'unknown';
+  #lastServerState: PteroServerState = 'unknown';
 
   /**
    * Creates a new instance of the class
@@ -190,15 +196,32 @@ export class PteroConnectionWrapper {
     if (_method !== 'GET' && _body) {
       requestOptions.body = JSON.stringify(_body);
     }
-    return new Promise<any>((resolve: (value: unknown) => void, reject: (reason?: any) => void) => {
+    return new Promise<Record<string, any>>((resolve: (value: Record<string, any>) => void, reject: (reason?: any) => void) => {
       fetch(requestUrl, requestOptions)
         .then(response => {
-          // console.log(`${_method} ${requestUrl} done`);
-          response.json()
-            .then(json => resolve(json))
-            .catch(error => {
-              console.log(`Unable to parse JSON for ${requestUrl}: ${error.message}`);
-              reject(error.message);
+          if (response.status >= 400) {
+            console.error(`${_method} ${requestUrl}: ${response.status} ${response.statusText}`);
+            console.error(JSON.stringify(requestOptions.headers));
+            console.error(JSON.stringify(_body));
+          }
+          response.text()
+            .then(text => {
+              if (response.status >= 400) {
+                console.error(text);
+              }
+              if (text.length) {
+                try {
+                  const json = JSON.parse(text);
+                  // console.info(`${requestUrl} => JSON`);
+                  resolve(json);
+                } catch (error) {
+                  // console.info(`${requestUrl} => TEXT`);
+                  resolve({ text });
+                }
+              } else {
+                // console.info(`${requestUrl} => EMPTY`);
+                resolve(response);
+              }
             });
         })
         .catch(error => {
@@ -215,8 +238,7 @@ export class PteroConnectionWrapper {
   private async requestWebsocketDetails() {
     this.#pteroWebSocketDetails = {} as PteroWebSocketDetailsType;
     const jsonResponse = await this.apiGet(`/api/client/servers/${this.serverId}/websocket`);
-    this.#pteroWebSocketDetails = jsonResponse.data || {} as PteroWebSocketDetailsType;
-    // console.log(`Got token for ${this.serverId}`);
+    this.#pteroWebSocketDetails = jsonResponse['data'] || {} as PteroWebSocketDetailsType;
   }
 
   private async initSocket() {
@@ -286,6 +308,7 @@ export class PteroConnectionWrapper {
       if (statsData.state !== this.#lastServerState) {
         const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}};
         console.log(`state went from ${this.#lastServerState} to ${statsData.state}`);
+        this.#lastServerState = statsData.state;
         this.triggerEvent('onStateChanged', augmentedStatsData);
         if (statsData.state === 'starting') {
           this.triggerEvent('onStateStarting', augmentedStatsData);
@@ -297,10 +320,13 @@ export class PteroConnectionWrapper {
         } else if (statsData.state === 'offline') {
           this.triggerEvent('onStateStopped', augmentedStatsData);
         }
-        this.#lastServerState = statsData.state;
       }
     } else if (socketMessage.event === 'onConsoleMessage') {
       this.triggerEvent('onConsoleMessage', socketMessage.args);
+    } else if (socketMessage.event === 'install started') {
+      this.triggerEvent('onInstallStarted', socketMessage.args);
+    } else if (socketMessage.event === 'install completed') {
+      this.triggerEvent('onInstallCompleted', socketMessage.args);
     }
   }
 }

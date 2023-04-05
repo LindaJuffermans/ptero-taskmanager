@@ -138,7 +138,7 @@ export const ScheduleActivate: FC<PropertiesScheduleActivate> = (props: Properti
   return (
     <>
       <label key={`schedule${props.index}`} htmlFor={`schedule${props.index}`}>
-        <p>Schedule name:</p>
+        <p>Schedule name: <i className='fas fa-info-circle'><span>Will find the schedule on a partial match.<br/>Only one schedule must qualify.</span></i></p>
         <input type='text' id={`schedule${props.index}`} value={scheduleName} onChange={changeScheduleName} />
       </label>
     </>
@@ -179,7 +179,7 @@ export const ScheduleDeactivate: FC<PropertiesScheduleDeactivate> = (props: Prop
   return (
     <>
       <label key={`schedule${props.index}`} htmlFor={`schedule${props.index}`}>
-        <p>Schedule name:</p>
+        <p>Schedule name contains:</p>
         <input type='text' id={`schedule${props.index}`} value={scheduleName} onChange={changeScheduleName} />
       </label>
     </>
@@ -297,7 +297,6 @@ type PropertiesFileDecompress = {
 };
 export const FileDecompress: FC<PropertiesFileDecompress> = (props: PropertiesFileDecompress) => {
   const [sourceFile, setSourceFile] = useState('');
-  const [targetFolder, setTargetFolder] = useState('');
   const [taskList, taskDispatcher] = useContext(TaskListContext);
 
   if (taskDispatcher === null) {
@@ -306,7 +305,6 @@ export const FileDecompress: FC<PropertiesFileDecompress> = (props: PropertiesFi
 
   useEffect(() => {
     setSourceFile(props.task.properties.sourceFile || '');
-    setTargetFolder(props.task.properties.targetFolder || '');
   }, [])
 
   const changeSourceFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -319,25 +317,11 @@ export const FileDecompress: FC<PropertiesFileDecompress> = (props: PropertiesFi
     });
   };
 
-  const changeTargetFolder = (event: ChangeEvent<HTMLInputElement>) => {
-    setTargetFolder(event.target.value);
-    props.task.properties.targetFolder = event.target.value;
-    taskDispatcher({
-      action: 'update',
-      index: props.index,
-      task: props.task
-    });
-  };
-
   return (
     <>
       <label key={`source${props.index}`} htmlFor={`source${props.index}`}>
         <p>Source file:</p>
         <input type='text' id={`source${props.index}`} value={sourceFile} onChange={changeSourceFile} />
-      </label>
-      <label key={`target${props.index}`} htmlFor={`target${props.index}`}>
-        <p>Target folder:</p>
-        <input type='text' id={`target${props.index}`} value={targetFolder} onChange={changeTargetFolder} />
       </label>
     </>
   );

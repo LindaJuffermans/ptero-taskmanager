@@ -11,6 +11,7 @@
   color: rgb(var(--input-focus-fg));
   background-color: rgb(var(--input-bg));
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px;
   min-height: calc(100% - var(--icon-size));
 }
@@ -28,15 +29,17 @@
 }
 
 .category {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  grid-column-gap: 16px;
-  grid-row-gap:8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: stretch;
+  column-gap: 8px;
+  row-gap: 16px;
   margin: 4px 0 8px 0;
 }
 
 .server {
-  min-width: 100px;
+  position: relative;
+  min-width: fit-content;
 }
 .server h4 {
   font-size: var(--menu-fsize);
@@ -45,14 +48,19 @@
   background: rgb(var(--menu-bg));
   padding: 2px 8px;
 }
-.server p {
+.server .list p {
   font-family: monospace;
   font-size: 12px;
   white-space: nowrap;
   color: white;
-  background: black;
-  overflow-x: hidden;
   padding: 2px 8px;
+  overflow-x: hidden;
+}
+
+.server .list {
+  position: relative;
+  background: black;
+  min-width: 400px;
 }
 
 .console p.error {

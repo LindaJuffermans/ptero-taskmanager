@@ -67,7 +67,6 @@ export type FileDecompressTask = {
   taskName: 'FileDecompress',
   properties: {
     sourceFile?: string,
-    targetFolder?: string,
   }
 };
 export type FileCompressTask = {
@@ -186,22 +185,26 @@ export type LogMessageType =
   | 'error'
   | 'completed';
 type LogMessageInfo = {
+  entryTime: number,
   type: 'info',
   message: string,
 };
 type LogMessageError = {
+  entryTime: number,
   type: 'error',
   message: string,
 };
 type LogMessageCompleted = {
+  entryTime: number,
   type: 'completed',
 };
 type LogMessage =
   | LogMessageInfo
   | LogMessageError
   | LogMessageCompleted;
-type ServerLog = {
+export type ServerLog = {
   serverId: string,
+  startTime: number,
   logs: LogMessage[],
 };
 export type LogList = ServerLog[];
@@ -227,6 +230,7 @@ type LogHandlerType =
 const logListEntry = (serverId: string) => {
   return {
     serverId: serverId,
+    startTime: Date.now(),
     logs: [],
   };
 };
@@ -238,10 +242,7 @@ export const taskLogHandler = (logList: LogList, data: LogHandlerType): LogList 
   if (data.action === 'init') {
     const _logList: LogList = [];
     data.serverIdList.forEach(_serverId => {
-      _logList.push({
-        serverId: _serverId,
-        logs: [],
-      });
+      _logList.push(logListEntry(_serverId));
     });
     return _logList;
   }
@@ -249,7 +250,11 @@ export const taskLogHandler = (logList: LogList, data: LogHandlerType): LogList 
     // console.info('logList:', logList);
     const targetIndex = logList.findIndex(log => log.serverId === data.serverId);
     const targetLog = targetIndex === -1 ? logListEntry(data.serverId) : logList[targetIndex];
-    targetLog!.logs.push({
+    if (!targetLog || !targetLog.logs) {
+      return logList;
+    }
+    targetLog.logs.push({
+      entryTime: Date.now(),
       type: data.type,
       message: data.message,
     });

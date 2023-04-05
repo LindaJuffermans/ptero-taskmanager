@@ -4,6 +4,7 @@ import { FileCompressTask, FileDecompressTask, FileDeleteTask, FilePullTask, Pow
 import { PteroConnectionWrapper, PteroScheduleAttributes, pteroWebsocket } from '@/lib/pterodactyl';
 
 const pathWithFileRegex = /^(\/.+\/)([^/]+)$/;
+const optionalPathWithFileRegex = /^(\/.+\/)?([^/]+)$/;
 
 export default function runHandler(request: NextApiRequest, response: NextApiResponse) {
   const body = JSON.parse(request.body);
@@ -53,6 +54,52 @@ const logTask = (serverId: string, type: LogMessageType, message: string = '') =
   return message;
 }
 
+const internalServerIdList = new Map<string, string>();
+const getInternalServerId = (pteroConnection: PteroConnectionWrapper) => {
+  return new Promise<number>((resolve, reject) => {
+    getServerDetailsIfEmpty(pteroConnection)
+      .then(response => {
+        if (internalServerIdList.has(pteroConnection.serverId)) {
+          resolve(parseInt(`${internalServerIdList.get(pteroConnection.serverId)}`));
+        } else {
+          reject(null);
+        }
+      })
+      .catch(error => {
+        console.error(`Unable to get /api/client`);
+        reject(`Unable to get /api/client`);
+      });
+  });
+}
+
+const getServerDetailsIfEmpty = (pteroConnection: PteroConnectionWrapper) => {
+  return new Promise<number>((resolve, reject) => {
+    if (internalServerIdList.size) {
+      resolve(internalServerIdList.size);
+      return;
+    }
+    getServerDetails(pteroConnection, 1)
+      .then(response => {
+        resolve(internalServerIdList.size);
+        return;
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
+
+const getServerDetails = async (pteroConnection: PteroConnectionWrapper, page: number = 1) => {
+  const response = await pteroConnection.apiGet(`/api/client?type=admin-all&page=${page}`, {});
+  for (const server of response['data']) {
+    internalServerIdList.set(`${server.attributes.identifier}`, `${server.attributes.internal_id}`);
+  }
+  if (page < parseInt(response['meta']['pagination']['total_pages'])) {
+    await getServerDetails(pteroConnection, page + 1);
+  }
+  return true;
+}
+
 /**
  * Runs a set of tasks on a single server
  * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
@@ -61,7 +108,7 @@ const logTask = (serverId: string, type: LogMessageType, message: string = '') =
  */
 const runTaskListOnServer = (serverId: string, taskList: TaskList) => {
   const pteroConnection = pteroWebsocket(serverId);
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!pteroConnection) {
       reject(logTask(serverId, 'error', 'Not connected'));
       return;
@@ -88,43 +135,49 @@ const runTaskListOnServer = (serverId: string, taskList: TaskList) => {
   });
 };
 
+/**
+ * Run a single task on a server
+ * @param pteroConnection The established Ptero connection object for this server
+ * @param task The task
+ * @returns A promise that resolves if the task execution is successful or rejects if the task failed
+ */
 function runTaskOnServer(pteroConnection: PteroConnectionWrapper, task: Task) {
-  return new Promise((resolve, reject) => {
-    const taskName = task.taskName;
-    if (taskName === 'PowerStart') {
-      return PowerStart(pteroConnection, task);
-    } else if (taskName === 'PowerStop') {
-      return PowerStop(pteroConnection, task);
-    } else if (taskName === 'ScheduleActivate') {
-      return ScheduleActivate(pteroConnection, task);
-    } else if (taskName === 'ScheduleDeactivate') {
-      return ScheduleDeactivate(pteroConnection, task);
-    } else if (taskName === 'FilePull') {
-      return FilePull(pteroConnection, task);
-    } else if (taskName === 'FileDelete') {
-      return FileDelete(pteroConnection, task);
-    } else if (taskName === 'FileDecompress') {
-      return FileDecompress(pteroConnection, task);
-    } else if (taskName === 'FileCompress') {
-      return FileCompress(pteroConnection, task);
-    } else if (taskName === 'StartupUpdate') {
-      return StartupUpdate(pteroConnection, task);
-    } else if (taskName === 'StartupReinstall') {
-      return StartupReinstall(pteroConnection, task);
-    } else if (taskName === 'ServerSuspend') {
-      return ServerSuspend(pteroConnection, task);
-    } else if (taskName === 'ServerUnsuspend') {
-      return ServerUnsuspend(pteroConnection, task);
-    } else {
+  const taskName = task.taskName;
+  if (taskName === 'PowerStart') {
+    return PowerStart(pteroConnection, task);
+  } else if (taskName === 'PowerStop') {
+    return PowerStop(pteroConnection, task);
+  } else if (taskName === 'ScheduleActivate') {
+    return ScheduleActivate(pteroConnection, task);
+  } else if (taskName === 'ScheduleDeactivate') {
+    return ScheduleDeactivate(pteroConnection, task);
+  } else if (taskName === 'FilePull') {
+    return FilePull(pteroConnection, task);
+  } else if (taskName === 'FileDelete') {
+    return FileDelete(pteroConnection, task);
+  } else if (taskName === 'FileDecompress') {
+    return FileDecompress(pteroConnection, task);
+  } else if (taskName === 'FileCompress') {
+    return FileCompress(pteroConnection, task);
+  } else if (taskName === 'StartupUpdate') {
+    return StartupUpdate(pteroConnection, task);
+  } else if (taskName === 'StartupReinstall') {
+    return StartupReinstall(pteroConnection, task);
+  } else if (taskName === 'ServerSuspend') {
+    return ServerSuspend(pteroConnection, task);
+  } else if (taskName === 'ServerUnsuspend') {
+    return ServerUnsuspend(pteroConnection, task);
+  } else {
+    return new Promise<string>((resolve, reject) => {
       logTask(pteroConnection.serverId, 'error', `Unknown task ${taskName}`)
       reject(`Unknown task ${taskName}`);
-    }
-  });
+    });
+  }
 }
 
 const PowerStart = (pteroConnection: PteroConnectionWrapper, task: PowerStartTask) => {
   const label = taskLabel['PowerStart'];
-  return new Promise(async (resolve, reject) => {
+  return new Promise<string>(async (resolve, reject) => {
     const onRunning = () => {
       logTask(pteroConnection.serverId, 'info', `[${label}] Running`);
       if (task.properties.wait) {
@@ -135,17 +188,21 @@ const PowerStart = (pteroConnection: PteroConnectionWrapper, task: PowerStartTas
     pteroConnection.addEventListener('onStateRunning', onRunning);
 
     pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'start' });
-    logTask(pteroConnection.serverId, 'info', `[${label}] Starting`);
+    logTask(pteroConnection.serverId, 'info', `[${label}] Starting...`);
     if (!task.properties.wait) {
-      resolve(`[${label}] Starting`);
+      resolve(`[${label}] Starting...`);
     }
   });
 };
 
 const PowerStop = (pteroConnection: PteroConnectionWrapper, task: PowerStopTask) => {
   const label = taskLabel['PowerStop'];
-  return new Promise(async (resolve, reject) => {
+  return new Promise<string>(async (resolve, reject) => {
+    let timeoutId: NodeJS.Timeout | null = null;
     const onStopped = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       logTask(pteroConnection.serverId, 'info', `[${label}] Stopped`);
       if (task.properties.wait) {
         resolve(`[${label}] Stopped`);
@@ -155,12 +212,12 @@ const PowerStop = (pteroConnection: PteroConnectionWrapper, task: PowerStopTask)
     pteroConnection.addEventListener('onStateStopped', onStopped);
 
     pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'stop' });
-    logTask(pteroConnection.serverId, 'info', `[${label}] Stopping`);
+    logTask(pteroConnection.serverId, 'info', `[${label}] Stopping...`);
     if (task.properties.wait) {
       if (task.properties.killTimeout && parseInt(task.properties.killTimeout) > 0) {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           pteroConnection.apiPost(`/api/client/servers/%s/power`, {}, { signal: 'kill' });
-          logTask(pteroConnection.serverId, 'info', `[${label}] Killing`);
+          logTask(pteroConnection.serverId, 'info', `[${label}] Killing...`);
         }, parseInt(task.properties.killTimeout) * 1000);
       }
     } else {
@@ -171,7 +228,7 @@ const PowerStop = (pteroConnection: PteroConnectionWrapper, task: PowerStopTask)
 
 const ScheduleActivate = (pteroConnection: PteroConnectionWrapper, task: ScheduleActivateTask) => {
   const label = taskLabel['ScheduleActivate'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.scheduleName) {
       logTask(pteroConnection.serverId, 'error', `[${label}] No schedule name provided`);
       reject(`No schedule name provided`);
@@ -181,8 +238,10 @@ const ScheduleActivate = (pteroConnection: PteroConnectionWrapper, task: Schedul
       .then(schedule => {
         logTask(pteroConnection.serverId, 'info', `[${label}] Found schedule ${schedule.id}: ${schedule.name}`)
         if (schedule.is_active) {
-          resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Schedule ${schedule.name} was already active`));
-          return;
+          const test = logTask(pteroConnection.serverId, 'info', `[${label}] Schedule ${schedule.name} was already active`);
+          console.log(`test: ${test}`);
+          resolve(test);
+        return;
         }
         const requestBody = {
           'name': schedule.name,
@@ -195,7 +254,9 @@ const ScheduleActivate = (pteroConnection: PteroConnectionWrapper, task: Schedul
         };
         pteroConnection.apiPost(`/api/client/servers/${pteroConnection.serverId}/schedules/${schedule.id}`, {}, requestBody)
           .then(response => {
-            resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Activated schedule "${schedule.name}"`));
+            const test = logTask(pteroConnection.serverId, 'info', `[${label}] Activated schedule "${schedule.name}"`);
+            console.log(`test: ${test}`);
+            resolve(test);
             return;
           })
           .catch(error => {
@@ -212,7 +273,7 @@ const ScheduleActivate = (pteroConnection: PteroConnectionWrapper, task: Schedul
 
 const ScheduleDeactivate = (pteroConnection: PteroConnectionWrapper, task: ScheduleDeactivateTask) => {
   const label = taskLabel['ScheduleDeactivate'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.scheduleName) {
       reject(logTask(pteroConnection.serverId, 'error', `[${label}] No schedule name provided`));
       return;
@@ -252,7 +313,7 @@ const ScheduleDeactivate = (pteroConnection: PteroConnectionWrapper, task: Sched
 
 const FilePull = (pteroConnection: PteroConnectionWrapper, task: FilePullTask) => {
   const label = taskLabel['FilePull'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.sourceUrl || !task.properties.targetFile) {
       reject(logTask(pteroConnection.serverId, 'error', `[${label}] No source url or target file provided`));
       return;
@@ -283,7 +344,7 @@ const FilePull = (pteroConnection: PteroConnectionWrapper, task: FilePullTask) =
 
 const FileDelete = (pteroConnection: PteroConnectionWrapper, task: FileDeleteTask) => {
   const label = taskLabel['FileDelete'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.targetFile) {
       reject(logTask(pteroConnection.serverId, 'error', `[${label}] No target file provided`));
       return;
@@ -311,15 +372,21 @@ const FileDelete = (pteroConnection: PteroConnectionWrapper, task: FileDeleteTas
 
 const FileDecompress = (pteroConnection: PteroConnectionWrapper, task: FileDecompressTask) => {
   const label = taskLabel['FileDecompress'];
-  return new Promise((resolve, reject) => {
-    if (!task.properties.sourceFile || !task.properties.targetFolder) {
-      reject(logTask(pteroConnection.serverId, 'error', `[${label}] No source file or target folder provided`));
+  return new Promise<string>((resolve, reject) => {
+    if (!task.properties.sourceFile) {
+      reject(logTask(pteroConnection.serverId, 'error', `[${label}] No source file provided`));
       return;
     }
+    if (!optionalPathWithFileRegex.test(task.properties.sourceFile)) {
+      reject(logTask(pteroConnection.serverId, 'error', `[${label}] Invalid source file provided`));
+      return;
+    }
+    const [all, directory, filename] = task.properties.sourceFile.match(optionalPathWithFileRegex)!;
     const requestBody = {
-      root: task.properties.targetFolder,
-      files: task.properties.sourceFile,
+      root: directory || '/',
+      file: filename,
     };
+    logTask(pteroConnection.serverId, 'info', `[${label}] Decompressing ${task.properties.sourceFile}...`)
     pteroConnection.apiPost(`/api/client/servers/${pteroConnection.serverId}/files/decompress`, {}, requestBody)
       .then(response => {
         resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Decompressed ${task.properties.sourceFile}`));
@@ -334,7 +401,7 @@ const FileDecompress = (pteroConnection: PteroConnectionWrapper, task: FileDecom
 
 const FileCompress = (pteroConnection: PteroConnectionWrapper, task: FileCompressTask) => {
   const label = taskLabel['FileCompress'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.targetFolder) {
       reject(logTask(pteroConnection.serverId, 'error', `[${label}] No target folder provided`));
       return;
@@ -360,7 +427,7 @@ const FileCompress = (pteroConnection: PteroConnectionWrapper, task: FileCompres
         "modified_at": "2023-03-23T10:45:16+00:00"
     }
 }*/
-        resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Compressed ${task.properties.targetFolder} to ${response.attributes?.name}`));
+        resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Compressed ${task.properties.targetFolder} to ${response['attributes'].name}`));
         return;
       })
       .catch(error => {
@@ -372,22 +439,23 @@ const FileCompress = (pteroConnection: PteroConnectionWrapper, task: FileCompres
 
 const StartupUpdate = (pteroConnection: PteroConnectionWrapper, task: StartupUpdateTask) => {
   const label = taskLabel['StartupUpdate'];
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     if (!task.properties.variableName || !task.properties.value) {
       reject(logTask(pteroConnection.serverId, 'error', `[${label}] No variable name or value provided`));
       return;
     }
+    const variableName = task.properties.variableName.replaceAll(/\s/g, '_');
     const requestBody = {
-      key: task.properties.variableName,
+      key: variableName,
       value: task.properties.value,
     };
-    pteroConnection.apiPost(`/api/client/servers/${pteroConnection.serverId}/startup/variable`, {}, requestBody)
+    pteroConnection.apiPut(`/api/client/servers/${pteroConnection.serverId}/startup/variable`, {}, requestBody)
       .then(response => {
-        resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Set ${task.properties.variableName} to ${task.properties.value}`));
+        resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Set ${variableName} to ${task.properties.value}`));
         return;
       })
       .catch(error => {
-        reject(logTask(pteroConnection.serverId, 'error', `[${label}] Unable to set ${task.properties.variableName}: "${error.message}"`));
+        reject(logTask(pteroConnection.serverId, 'error', `[${label}] Unable to set ${variableName}: "${error.message}"`));
         return;
       });
   });
@@ -395,10 +463,23 @@ const StartupUpdate = (pteroConnection: PteroConnectionWrapper, task: StartupUpd
 
 const StartupReinstall = (pteroConnection: PteroConnectionWrapper, task: StartupReinstallTask) => {
   const label = taskLabel['StartupReinstall'];
-  return new Promise((resolve, reject) => {
-    pteroConnection.apiPost(`/api/client/servers/${pteroConnection.serverId}/startup/reinstall`, {}, {})
+  return new Promise<string>((resolve, reject) => {
+    const onInstallStarted = () => {
+      logTask(pteroConnection.serverId, 'info', `[${label}] Reinstall started`);
+      pteroConnection.removeEventListener('onInstallStarted', onInstallStarted);
+    }
+    pteroConnection.addEventListener('onInstallStarted', onInstallStarted);
+
+    const onInstallCompleted = () => {
+      resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Reinstall completed`));
+      pteroConnection.removeEventListener('onInstallStarted', onInstallStarted);
+      pteroConnection.removeEventListener('onInstallCompleted', onInstallCompleted);
+    }
+    pteroConnection.addEventListener('onInstallCompleted', onInstallCompleted);
+
+    pteroConnection.apiPost(`/api/client/servers/${pteroConnection.serverId}/settings/reinstall`, {}, {})
       .then(response => {
-        resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Reinstalled the server`));
+        logTask(pteroConnection.serverId, 'info', `[${label}] Reinstalling...`);
         return;
       })
       .catch(error => {
@@ -410,20 +491,48 @@ const StartupReinstall = (pteroConnection: PteroConnectionWrapper, task: Startup
 
 const ServerSuspend = (pteroConnection: PteroConnectionWrapper, task: ServerSuspendTask) => {
   const label = taskLabel['ServerSuspend'];
-  return new Promise((resolve, reject) => {
-    logTask(pteroConnection.serverId, 'info', `ServerSuspend not yet implemented`);
-    resolve(`ServerSuspend not yet implemented`);
+  return new Promise<string>((resolve, reject) => {
+    getInternalServerId(pteroConnection)
+      .then(internalId => {
+        pteroConnection.apiPost(`/api/application/servers/${internalId}/suspend`, {}, {})
+          .then(response => {
+            resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Suspended the server`));
+            return;
+          })
+          .catch(error => {
+            reject(logTask(pteroConnection.serverId, 'error', `[${label}] Unable to suspend the server: "${error.message}"`));
+            return;
+          });
+      })
+      .catch(error => {
+        reject(logTask(pteroConnection.serverId, 'error', `[${label}] No internal server ID found`));
+        return;
+      });
   });
 };
 
 const ServerUnsuspend = (pteroConnection: PteroConnectionWrapper, task: ServerUnsuspendTask) => {
   const label = taskLabel['ServerUnsuspend'];
-  return new Promise((resolve, reject) => {
-    logTask(pteroConnection.serverId, 'info', `ServerUnsuspend not yet implemented`);
-    resolve(`ServerUnsuspend not yet implemented`);
+  return new Promise<string>((resolve, reject) => {
+    getInternalServerId(pteroConnection)
+      .then(internalId => {
+        pteroConnection.apiPost(`/api/application/servers/${internalId}/unsuspend`, {}, {})
+          .then(response => {
+            resolve(logTask(pteroConnection.serverId, 'info', `[${label}] Unsuspended the server`));
+            return;
+          })
+          .catch(error => {
+            reject(logTask(pteroConnection.serverId, 'error', `[${label}] Unable to unsuspend the server: "${error.message}"`));
+            return;
+          });
+      })
+      .catch(error => {
+        reject(logTask(pteroConnection.serverId, 'error', `[${label}] No internal server ID found`));
+        return;
+      });
   });
 };
-
+// 1.18.2-40.1.93
 const scheduleByName = async(pteroConnection: PteroConnectionWrapper, scheduleName: string) => {
   const response = await pteroConnection.apiGet(`/api/client/servers/${pteroConnection.serverId}/schedules`);
   return new Promise<PteroScheduleAttributes>((resolve, reject) => {

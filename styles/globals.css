@@ -35,9 +35,16 @@
   --menu-fsize: 0.875rem;
   --menu-fweight: 500;
 
+  --tooltip-bg: var(--slatecolour-08);
+  --tooltip-fg: var(--slatecolour-01);
+  --tooltip-fsize: 0.75rem;
+  --tooltip-lineheight: 0.875rem;
+  --tooltip-fweight: 500;
+  
   --info-bg: var(--slatecolour-04);
   --info-fg: var(--slatecolour-08);
   --info-fsize: 0.875rem;
+  --info-lineheight: 1.0rem;
   --info-fweight: 100;
 
   --input-bg: var(--slatecolour-07);
@@ -87,6 +94,7 @@
   border: 0;
   font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
   font-weight: 500;
+  cursor: default;
 }
 
 

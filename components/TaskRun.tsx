@@ -42,6 +42,25 @@ export const TaskRun = (props: ServerListProps) => {
     );
   }
 
+  const formatTimestamp = (timestamp: number) => {
+    const msec = timestamp % 1000;
+    const sec = Math.floor(timestamp / 1000) % 60;
+    const min = Math.floor(timestamp / 60000) % 60;
+    return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}.${msec.toString().padStart(3, '0')}`;
+  }
+
+  const printLogList = (serverId: string) => {
+    const filteredLogList = logList.filter(serverLog => serverLog.serverId === serverId)[0];
+    if (!filteredLogList) {
+      return <p key={`nodata${serverId}`} className={styles['info']}>No data</p>;
+    }
+    const serverLogList = filteredLogList.logs;
+    const logStartTime = filteredLogList.startTime;
+    return serverLogList.map((logEntry, index) =>
+      <p key={`${serverId}${index}`} className={styles[logEntry.type]}>[{formatTimestamp(logEntry.entryTime - logStartTime)}] {logEntry.type === 'completed' ? `Finished` : logEntry.message}</p>
+    );
+  };
+
   return (
     <>
       <div className={styles['taskRun']}>
@@ -60,13 +79,7 @@ export const TaskRun = (props: ServerListProps) => {
                           return (
                             <div key={`server${server.id}`} className={styles['server']}>
                               <h4 key={`header${server.id}`}>{server.name}</h4>
-                              {
-                                logList.filter(serverLog => serverLog.serverId === server.id).length === 0
-                                  ? <p key={`nodata${server.id}`} className={styles['info']}>No data</p>
-                                  : logList.filter(serverLog => serverLog.serverId === server.id)[0]?.logs.map(
-                                    (logEntry, index) => <p key={`${server.id}${index}`} className={styles[logEntry.type]}>{logEntry.type === 'completed' ? `Finished` : logEntry.message}</p>
-                                  )
-                              }
+                              <div className={styles['list']}>{printLogList(server.id)}</div>
                             </div>
                           );
                         })

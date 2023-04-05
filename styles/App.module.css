@@ -64,6 +64,7 @@
   height: 3px;
   width: 100%;
   transition: background-color 0.5s ease-in-out;
+  cursor: ns-resize;
 }
 
 .sashWrapVertical .line {
@@ -71,6 +72,7 @@
   height: 100%;
   width: 3px;
   transition: background-color 0.5s ease-in-out;
+  cursor: ew-resize;
 }
 
 .inactive .line {

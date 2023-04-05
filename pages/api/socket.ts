@@ -44,8 +44,8 @@ export default function SocketHandler(request: NextApiRequest, response: INextAp
     response.socket.server.io = io;
     global.ioSocket = io;
 
-    io.on('connection', (socket: Socket<IClientToServerEvents, IServerToClientEvents>) => {
       /*
+    io.on('connection', (socket: Socket<IClientToServerEvents, IServerToClientEvents>) => {
       socket.on('hello', () => {
         const randomServerNumber:number = Math.floor(Math.random() * serverList.length)
         const randomServerId:string = serverList[randomServerNumber]!
@@ -58,8 +58,8 @@ export default function SocketHandler(request: NextApiRequest, response: INextAp
         console.log('emitting: serverStatus', randomServerId, randomState, randomUptime, randomCpu, randomMemory)
         socket.emit('serverStatus', randomServerId, randomState, randomUptime, randomCpu, randomMemory)
       })
-      */
     });
+      */
   }
   response.end();
 }
@@ -81,14 +81,3 @@ const openPteroConnection = (serverId: string) => {
 export const openAllPteroConnections = (serverIdList: string[]) => {
   serverIdList.forEach(serverId => openPteroConnection(serverId));
 };
-
-/*
-const openAllPteroConnections = () => {
-  const contents:Buffer = fs.readFileSync(process.cwd() + `/${process.env['SERVER_CONFIG_FILE']}`)
-  const config:Configuration = YAML.parse(`${contents}`)
-
-  const serverList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat()
-  serverList.forEach(serverId => openPteroConnection(serverId))
-}
-*/
-

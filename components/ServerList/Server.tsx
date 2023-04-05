@@ -53,16 +53,18 @@ export const Server = (props: ServerProps) => {
 
   return (
     <li className={`${styles[status.state]}`}>
-      <p className={`${styles['name']} name`}>{(props.index + 1).toString().padStart(2, '0')} - {props.server.name}</p>
-      <p className={`${styles['state']} state`}>{status.state} ({Math.floor(status.upTime / 1000 / 60 / 60)}'{(Math.floor(status.upTime / 1000 / 60) % 60).toString().padStart(2, '0')})</p>
-      <p className={`${styles['cpu']} cpu`}>{status.cpu?.toFixed(2)}%</p>
-      <p className={`${styles['mem']} mem`}>{(status.memory / 1000 / 1000 / 1000).toFixed(2)} GB</p>
+      <a href={`https://panel.vaulthunters.gg/server/${props.server.id}/files`} target='_blank'>
+      <p className={`${styles['name']} name`}><span>{(props.index + 1).toString().padStart(2, '0')} - {props.server.name}</span></p>
+      <p className={`${styles['state']} state`}><span>{status.state} ({Math.floor(status.upTime / 1000 / 60 / 60)}'{(Math.floor(status.upTime / 1000 / 60) % 60).toString().padStart(2, '0')})</span></p>
+      <p className={`${styles['cpu']} cpu`}><span>{status.cpu?.toFixed(2)}%</span></p>
+      <p className={`${styles['mem']} mem`}><span>{(status.memory / 1000 / 1000 / 1000).toFixed(2)} GB</span></p>
       <p className={`${styles['tasks']} task`}>
         <label htmlFor={props.server.id}>
           <input type='checkbox' id={props.server.id} value='true' checked={runList?.has(props.server.id)} onChange={updateRunList}/>
           <label htmlFor={props.server.id} className={`${styles['toggle']} ${runList?.has(props.server.id) ? styles['toggle-on'] : styles['toggle-off']}`}/>
         </label>
       </p>
+      </a>
     </li>
   );
 };

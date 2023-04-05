@@ -142,6 +142,34 @@ button.add {
   padding-bottom: 2px;
 }
 
+.taskUi > label > p > i {
+  position: relative;
+  color: rgb(var(--slatecolour-10));
+}
+.taskUi > label > p > i > span {
+  display: none;
+}
+.taskUi > label > p:hover > i > span {
+  position: absolute;
+  font-size: var(--tooltip-fsize);
+  line-height: var(--tooltip-lineheight);
+  font-weight: var(--tooltip-fweight);
+  color: rgb(var(--tooltip-fg));
+
+  width: 200px;
+  padding: 4px 5px;
+  border: var(--tooltip-fg);
+  background: rgb(var(--tooltip-bg));
+  left: 10px;
+  bottom: 20px;
+  white-space: normal;
+
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 0 5px 5px rgba(var(--tooltip-fg), .50);
+}
+
 /* checkboxes are hidden; see .toggle */
 .taskUi input[type=checkbox] {
   width: 0;
@@ -159,6 +187,7 @@ button.add {
   border: var(--input-border);
   background: rgb(var(--input-bg));
   outline: none;
+  cursor: text;
 }
 .taskUi input[type=text]:disabled,
 .taskUi input[type=number]:disabled {
