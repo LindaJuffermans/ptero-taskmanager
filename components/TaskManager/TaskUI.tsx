@@ -138,7 +138,7 @@ export const ScheduleActivate: FC<PropertiesScheduleActivate> = (props: Properti
   return (
     <>
       <label key={`schedule${props.index}`} htmlFor={`schedule${props.index}`}>
-        <p>Schedule name: <i className='fas fa-info-circle'><span>Will find the schedule on a partial match.<br/>Only one schedule must qualify.</span></i></p>
+        <p>Schedule name: <i className='fas fa-info-circle'><span>Will find the schedule on a partial match.<br />Only one schedule must qualify.</span></i></p>
         <input type='text' id={`schedule${props.index}`} value={scheduleName} onChange={changeScheduleName} />
       </label>
     </>
@@ -179,7 +179,7 @@ export const ScheduleDeactivate: FC<PropertiesScheduleDeactivate> = (props: Prop
   return (
     <>
       <label key={`schedule${props.index}`} htmlFor={`schedule${props.index}`}>
-        <p>Schedule name contains:</p>
+        <p>Schedule name: <i className='fas fa-info-circle'><span>Will find the schedule on a partial match.<br />Only one schedule must qualify.</span></i></p>
         <input type='text' id={`schedule${props.index}`} value={scheduleName} onChange={changeScheduleName} />
       </label>
     </>
@@ -233,7 +233,7 @@ export const FilePull: FC<PropertiesFilePull> = (props: PropertiesFilePull) => {
   return (
     <>
       <label key={`source${props.index}`} htmlFor={`source${props.index}`}>
-        <p>Source url:</p>
+        <p>Source url: <i className='fas fa-info-circle'><span>Must be a direct URL.<br />Panel will not follow redirects.<br /><br />File will download in the background.</span></i></p>
         <input type='text' id={`source${props.index}`} value={sourceUrl} onChange={changeSourceUrl} />
       </label>
       <label key={`target${props.index}`} htmlFor={`target${props.index}`}>
@@ -320,7 +320,7 @@ export const FileDecompress: FC<PropertiesFileDecompress> = (props: PropertiesFi
   return (
     <>
       <label key={`source${props.index}`} htmlFor={`source${props.index}`}>
-        <p>Source file:</p>
+        <p>Source file: <i className='fas fa-info-circle'><span>File will be extracted<br />in the same folder.</span></i></p>
         <input type='text' id={`source${props.index}`} value={sourceFile} onChange={changeSourceFile} />
       </label>
     </>
@@ -361,7 +361,7 @@ export const FileCompress: FC<PropertiesFileCompress> = (props: PropertiesFileCo
   return (
     <>
       <label key={`target${props.index}`} htmlFor={`target${props.index}`}>
-        <p>Target folder:</p>
+        <p>Target folder: <i className='fas fa-info-circle'><span>Archive name is generated automatically<br />Filename will show in the execution console.</span></i></p>
         <input type='text' id={`target${props.index}`} value={targetFolder} onChange={changeTargetFolder} />
       </label>
     </>
@@ -382,7 +382,7 @@ export const StartupUpdate: FC<PropertiesStartupUpdate> = (props: PropertiesStar
   const [variableName, setVariableName] = useState('');
   const [value, setValue] = useState('');
   const [taskList, taskDispatcher] = useContext(TaskListContext);
-  
+
   if (taskDispatcher === null) {
     return null;
   }

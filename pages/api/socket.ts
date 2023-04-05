@@ -31,12 +31,9 @@ export interface IClientToServerEvents {
 };
 
 export default function SocketHandler(request: NextApiRequest, response: INextApiResponseWithSocket) {
-  console.log('Got websocket request');
   if (response.socket.server.io && global.ioSocket) {
-    console.log('Socket is already available');
+    // Socket is already available
   } else {
-    console.log('Initialising websocket');
-
     /* Client-To-Server first, Server-To-Client second */
     /* This is reversed in the client socket definition */
     const io = new IOServer<IClientToServerEvents, IServerToClientEvents>(response.socket.server);

@@ -212,14 +212,11 @@ export class PteroConnectionWrapper {
               if (text.length) {
                 try {
                   const json = JSON.parse(text);
-                  // console.info(`${requestUrl} => JSON`);
                   resolve(json);
                 } catch (error) {
-                  // console.info(`${requestUrl} => TEXT`);
                   resolve({ text });
                 }
               } else {
-                // console.info(`${requestUrl} => EMPTY`);
                 resolve(response);
               }
             });
@@ -307,13 +304,13 @@ export class PteroConnectionWrapper {
       this.triggerEvent('onStatsMessage', statsData);
       if (statsData.state !== this.#lastServerState) {
         const augmentedStatsData: PteroWrapperEventStats = {...statsData, ...{oldState: this.#lastServerState}};
-        console.log(`state went from ${this.#lastServerState} to ${statsData.state}`);
+        // console.log(`state went from ${this.#lastServerState} to ${statsData.state}`);
         this.#lastServerState = statsData.state;
         this.triggerEvent('onStateChanged', augmentedStatsData);
         if (statsData.state === 'starting') {
           this.triggerEvent('onStateStarting', augmentedStatsData);
         } else if (statsData.state === 'running') {
-          console.info('onStateRunning:');
+          // console.info('onStateRunning:');
           this.triggerEvent('onStateRunning', augmentedStatsData);
         } else if (statsData.state === 'stopping') {
           this.triggerEvent('onStateStopping', augmentedStatsData);

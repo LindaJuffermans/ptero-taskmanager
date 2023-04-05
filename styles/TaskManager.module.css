@@ -5,6 +5,15 @@
   padding: 4px 4px var(--container-offset) var(--container-offset);
   border-radius: 20px 0 0 20px;
   overflow-y: auto;
+  outline: none;
+}
+
+.taskManager * {
+  /* pointer-events: none; */
+}
+
+.taskManager.dragTarget {
+  outline: 2px dashed white;
 }
 
 .taskManager h2 p {
@@ -17,6 +26,10 @@ button.add {
 
 .taskManager ol.list {
   margin-top: 1px;
+}
+
+.taskManager input[type=file] {
+  display: none;
 }
 
 /* A single task in the Taskmanager */
@@ -156,13 +169,13 @@ button.add {
   font-weight: var(--tooltip-fweight);
   color: rgb(var(--tooltip-fg));
 
-  width: 200px;
+  /* width: 200px; */
   padding: 4px 5px;
   border: var(--tooltip-fg);
   background: rgb(var(--tooltip-bg));
   left: 10px;
   bottom: 20px;
-  white-space: normal;
+  white-space: nowrap;
 
   display: flex;
   justify-content: center;
