@@ -23,7 +23,7 @@ export const TaskManager = (props: TaskManagerProps) => {
       return;
     }
     const savedList = window.localStorage.getItem('taskList');
-    if ((typeof savedList) === 'string') {
+    if (savedList && (typeof savedList) === 'string') {
       taskDispatcher({
         action: 'set',
         taskList: JSON.parse(savedList),
