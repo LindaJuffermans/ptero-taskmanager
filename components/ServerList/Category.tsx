@@ -1,4 +1,4 @@
-import { MouseEvent, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { ConfigurationCategory, RunListContext } from '@/pages';
 import { Server } from '@/components/ServerList/Server';
@@ -10,9 +10,9 @@ type CategoryProps = {
 };
 export const Category = (props: CategoryProps) => {
   const [runState, setRunState] = useState(false);
-  const [runList, runListDispatcher] = useContext(RunListContext);
+  const {runListDispatcher} = useContext(RunListContext);
 
-  const updateRunList = (event: MouseEvent<HTMLParagraphElement>) => {
+  const updateRunList = (/* event: MouseEvent<HTMLParagraphElement> */) => {
     if (!runListDispatcher) {
       return;
     }

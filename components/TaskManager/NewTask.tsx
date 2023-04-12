@@ -8,7 +8,7 @@ import styles from '@/styles/TaskManager.module.css';
 
 export const NewTask = () => {
   const taskDialogReference = useRef<DialogReference>(null);
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
+  const {taskDispatcher} = useContext(TaskListContext);
 
   if (taskDispatcher === null) {
     return <p>Loading...</p>;

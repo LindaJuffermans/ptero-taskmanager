@@ -9,7 +9,8 @@ type DialogProps = {
   id: string,
   children: React.ReactNode,
 };
-export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<DialogReference>) => {
+
+const _Dialog = (props: DialogProps, parentReference: Ref<DialogReference>) => {
   const dialogContainerReference = useRef<HTMLDivElement>(null);
 
   const getDialogElement = (): HTMLDialogElement | null => {
@@ -53,4 +54,5 @@ export const Dialog = forwardRef((props: DialogProps, parentReference: Ref<Dialo
       </div>
     </dialog>    
   );
-});
+};
+export const Dialog = forwardRef(_Dialog);

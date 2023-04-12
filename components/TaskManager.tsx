@@ -14,7 +14,7 @@ type TaskManagerProps = {
 export const TaskManager = (props: TaskManagerProps) => {
   const clearTasksReference = useRef<DialogReference>(null);
   const [doRender, setDoRender] = useState(false);
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
+  const {taskList, taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setDoRender(true);

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import YAML from 'yaml';
 import { WebSocket } from 'ws';
 
-import { Configuration, LocalClientSocket } from '@/pages/index';
+import { Configuration } from '@/pages/index';
 
 /**
  * Ptero websocket responses
@@ -75,7 +75,6 @@ export type PteroScheduleAttributes = {
  * Pterodactyl API properties
  */
 
-type PteroPowerSignal = 'start' | 'stop' | 'restart' | 'kill';
 type PteroServerState = 'unknown' | 'starting' | 'running' | 'stopping' | 'offline';
 
 
@@ -256,13 +255,6 @@ export class PteroConnectionWrapper {
   }
 
   /**
-   * Enables using the private #eventListeners property in "keyof typeof"
-   */
-  private get _eventListeners() {
-    return this.#eventListeners;
-  }
-
-  /**
    * @internal Triggers an event by calling all the callbacks of the eventListeners set.
    * @param {string} eventName The event, one of: onStatsMessage, onConsoleMessage, onStateChanged, onStateRunning and onStateStopped
    * @param {object} eventData The arguments to pass to the callback
@@ -294,7 +286,7 @@ export class PteroConnectionWrapper {
     this.sendSocketToken();
   }
 
-  private async onSocketMessage(data: Buffer | string, isBinary: boolean) {
+  private async onSocketMessage(data: Buffer | string) {
     const message: string = data.toString();
     const socketMessage = JSON.parse(message);
     if (socketMessage.event === 'token expiring') {
@@ -336,8 +328,9 @@ const _pteroWebSocketCollection: Map<string, PteroConnectionWrapper> = new Map<s
  * @param serverId The Pterodactyl ID (e.g. 1a7ce997) of the server
  * @returns 
  */
-export const pteroWebsocket = (serverId: string, localClientSocket?: LocalClientSocket): PteroConnectionWrapper | undefined => {
+export const pteroWebsocket = (serverId: string): PteroConnectionWrapper | undefined => {
   if (_pteroWebSocketCollection.has(serverId)) {
+    console.log(`Already had socket for ${serverId}`);
     const _socket = _pteroWebSocketCollection.get(serverId);
     if (_socket) {
       return _socket;
@@ -348,6 +341,7 @@ export const pteroWebsocket = (serverId: string, localClientSocket?: LocalClient
   if (!_socket) {
     throw Error(`Unable to open socket for ${serverId}`);
   }
+  console.log(`New socket for ${serverId}`);
   _pteroWebSocketCollection.set(serverId, _socket);
   return _socket;
 }

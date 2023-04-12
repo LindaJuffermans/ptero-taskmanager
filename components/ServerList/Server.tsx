@@ -25,7 +25,7 @@ type ServerProps = {
 export const Server = (props: ServerProps) => {
   const [status, setStatus] = useState<ServerStatus>(defaultStatus);
   const statusMap = useContext(StatusMapContext);
-  const [runList, runListDispatcher] = useContext(RunListContext);
+  const {runList, runListDispatcher} = useContext(RunListContext);
 
   useEffect(() => {
     const _status = statusMap?.get(props.server.id);
@@ -55,7 +55,7 @@ export const Server = (props: ServerProps) => {
     <li className={`${styles[status.state]}`}>
       <a href={`https://panel.vaulthunters.gg/server/${props.server.id}/files`} target='_blank'>
       <p className={`${styles['name']} name`}><span>{(props.index + 1).toString().padStart(2, '0')} - {props.server.name}</span></p>
-      <p className={`${styles['state']} state`}><span>{status.state} ({Math.floor(status.upTime / 1000 / 60 / 60)}'{(Math.floor(status.upTime / 1000 / 60) % 60).toString().padStart(2, '0')})</span></p>
+      <p className={`${styles['state']} state`}><span>{status.state} ({Math.floor(status.upTime / 1000 / 60 / 60)}&apos;{(Math.floor(status.upTime / 1000 / 60) % 60).toString().padStart(2, '0')})</span></p>
       <p className={`${styles['cpu']} cpu`}><span>{status.cpu?.toFixed(2)}%</span></p>
       <p className={`${styles['mem']} mem`}><span>{(status.memory / 1000 / 1000 / 1000).toFixed(2)} GB</span></p>
       <p className={`${styles['tasks']} task`}>

@@ -32,9 +32,9 @@ export type ConfigurationServer = {
 export type LocalClientSocket = Socket<IServerToClientEvents, IClientToServerEvents>;
 
 export const LocalSocketContext = createContext<LocalClientSocket | null>(null);
-export const TaskListContext = createContext<[TaskList, Dispatch<TaskHandler> | null]>([[], null]);
+export const TaskListContext = createContext<{taskList: TaskList, taskDispatcher: Dispatch<TaskHandler> | null}>({taskList: [], taskDispatcher: null});
 export const LogListContext = createContext<LogList>([]);
-export const RunListContext = createContext<[Set<string> | null, Dispatch<ServerRunHandler> | null]>([null, null]);
+export const RunListContext = createContext<{runList: Set<string> | null, runListDispatcher: Dispatch<ServerRunHandler> | null}>({runList: null, runListDispatcher: null});
 
 type AppProps = {
   categories: ConfigurationCategoryList,
@@ -47,36 +47,40 @@ export default function App(props: AppProps) {
   const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>());
   const [logList, logListHandler] = useReducer(taskLogHandler, []);
 
+/*   useEffect(() => {
+    const serverIdList: string[] = props.categories.map(category => category.servers.map(server => server.id)).flat();
+    openAllPteroConnections(serverIdList);
+  }, [props.categories]); */
+
   useEffect(() => {
-    if (!socket || !socket.connected) {
-      openSocket();
-    }
-    return () => {
-      closeSocket();
-    }
-  }, []);
-
-  const openSocket = async () => {
-    if (socket) {
-      return;
-    }
-
-    await fetch('/api/socket');
-    const _socket = io();
-    setSocket(_socket);
-
-    _socket.on('taskStatus', (serverId: string, type: LogMessageType, message: string) => {
-      if (serverId === '--ALL--') {
-        console.log('All running completed');
-      } else {
-        logListHandler({
-          action: 'add',
-          serverId,
-          type,
-          message,
+    if (!socket) {
+      fetch('/api/socket')
+        .then(_ => {
+          const _socket = io();
+          setSocket(_socket);
+          console.log('Socket connection established', _socket);
+      
+          _socket.on('taskStatus', (serverId: string, type: LogMessageType, message: string) => {
+            if (serverId === '--ALL--') {
+              console.log('All running completed');
+            } else {
+              logListHandler({
+                action: 'add',
+                serverId,
+                type,
+                message,
+              });
+            }
+          });
         });
+    }
+
+    return () => {
+      if (socket?.connected) {
+        socket.disconnect();
       }
-    });
+    }
+  }, [socket]);
 
     // _socket.on('connect', () => { });
     // _socket.on('serverStatus', (serverId: string, type: LogMessageType, message: string = '') => {
@@ -87,15 +91,6 @@ export default function App(props: AppProps) {
       console.log(`${eventName}`, ...args);
     });
     */
-  };
-
-  const closeSocket = () => {
-    if (socket?.connected) {
-      socket.disconnect();
-    } else {
-      console.error(`App: Socket wasn't opened`);
-    }
-  };
 
   const runTasks = () => {
     if (!runList.size || !taskList.length) {
@@ -140,8 +135,8 @@ export default function App(props: AppProps) {
         <link rel="shortcut icon" href="/favicons/favicon.ico" />
       </Head>
       <LocalSocketContext.Provider value={socket}>
-        <TaskListContext.Provider value={[taskList, taskDispatcher]}>
-          <RunListContext.Provider value={[runList, runListDispatcher]}>
+        <TaskListContext.Provider value={{taskList, taskDispatcher}}>
+          <RunListContext.Provider value={{runList, runListDispatcher}}>
             <LogListContext.Provider value={logList}>
               <Body categories={props.categories} onExecute={runTasks} />
             </LogListContext.Provider>
@@ -184,8 +179,8 @@ export default function App(props: AppProps) {
 export async function getStaticProps() {
   const contents: Buffer = fs.readFileSync(`${process.env['SERVER_CONFIG_FILE']}`);
   const config: Configuration = YAML.parse(`${contents}`);
-  const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat();
-  openAllPteroConnections(serverIdList);
+  // const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat();
+  // openAllPteroConnections(serverIdList);
 
   return {
     props: {

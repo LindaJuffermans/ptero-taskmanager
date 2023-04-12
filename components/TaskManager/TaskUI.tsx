@@ -15,14 +15,15 @@ type PropertiesPowerStart = {
 };
 export const PowerStart: FC<PropertiesPowerStart> = (props: PropertiesPowerStart) => {
   const [isWait, setIsWait] = useState(false);
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setIsWait(!!props.task.properties.wait);
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeWait = (event: ChangeEvent<HTMLInputElement>) => {
     setIsWait(event.target.checked);
@@ -58,16 +59,16 @@ type PropertiesPowerStop = {
 export const PowerStop: FC<PropertiesPowerStop> = (props: PropertiesPowerStop) => {
   const [isWait, setIsWait] = useState(false);
   const [killTimeout, setKillTimeout] = useState('0');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setIsWait(!!props.task.properties.wait);
     setKillTimeout(props.task.properties.killTimeout || '0');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeWait = (event: ChangeEvent<HTMLInputElement>) => {
     setIsWait(event.target.checked);
@@ -115,15 +116,15 @@ type PropertiesScheduleActivate = {
 };
 export const ScheduleActivate: FC<PropertiesScheduleActivate> = (props: PropertiesScheduleActivate) => {
   const [scheduleName, setScheduleName] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setScheduleName(props.task.properties.scheduleName || '');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeScheduleName = (event: ChangeEvent<HTMLInputElement>) => {
     setScheduleName(event.target.value);
@@ -156,15 +157,15 @@ type PropertiesScheduleDeactivate = {
 };
 export const ScheduleDeactivate: FC<PropertiesScheduleDeactivate> = (props: PropertiesScheduleDeactivate) => {
   const [scheduleName, setScheduleName] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setScheduleName(props.task.properties.scheduleName || '');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeScheduleName = (event: ChangeEvent<HTMLInputElement>) => {
     setScheduleName(event.target.value);
@@ -199,16 +200,16 @@ type PropertiesFilePull = {
 export const FilePull: FC<PropertiesFilePull> = (props: PropertiesFilePull) => {
   const [sourceUrl, setSourceUrl] = useState('');
   const [targetFile, setTargetFile] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setSourceUrl(props.task.properties.sourceUrl || '');
     setTargetFile(props.task.properties.targetFile || '');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeSourceUrl = (event: ChangeEvent<HTMLInputElement>) => {
     setSourceUrl(event.target.value);
@@ -255,15 +256,15 @@ type PropertiesFileDelete = {
 };
 export const FileDelete: FC<PropertiesFileDelete> = (props: PropertiesFileDelete) => {
   const [targetFile, setTargetFile] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setTargetFile(props.task.properties.targetFile || '');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeTargetFile = (event: ChangeEvent<HTMLInputElement>) => {
     setTargetFile(event.target.value);
@@ -297,15 +298,15 @@ type PropertiesFileDecompress = {
 };
 export const FileDecompress: FC<PropertiesFileDecompress> = (props: PropertiesFileDecompress) => {
   const [sourceFile, setSourceFile] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setSourceFile(props.task.properties.sourceFile || '');
   }, [])
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeSourceFile = (event: ChangeEvent<HTMLInputElement>) => {
     setSourceFile(event.target.value);
@@ -338,15 +339,15 @@ type PropertiesFileCompress = {
 };
 export const FileCompress: FC<PropertiesFileCompress> = (props: PropertiesFileCompress) => {
   const [targetFolder, setTargetFolder] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setTargetFolder(props.task.properties.targetFolder || '');
   }, []);
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeTargetFolder = (event: ChangeEvent<HTMLInputElement>) => {
     setTargetFolder(event.target.value);
@@ -381,16 +382,16 @@ type PropertiesStartupUpdate = {
 export const StartupUpdate: FC<PropertiesStartupUpdate> = (props: PropertiesStartupUpdate) => {
   const [variableName, setVariableName] = useState('');
   const [value, setValue] = useState('');
-  const [taskList, taskDispatcher] = useContext(TaskListContext);
-
-  if (taskDispatcher === null) {
-    return null;
-  }
+  const {taskDispatcher} = useContext(TaskListContext);
 
   useEffect(() => {
     setVariableName(props.task.properties.variableName || '');
     setValue(props.task.properties.value || '');
   }, [])
+
+  if (taskDispatcher === null) {
+    return null;
+  }
 
   const changeVariableName = (event: ChangeEvent<HTMLInputElement>) => {
     setVariableName(event.target.value);
@@ -433,7 +434,7 @@ type PropertiesStartupReinstall = {
   index: number,
   task: StartupReinstallTask,
 };
-export const StartupReinstall: FC<PropertiesStartupReinstall> = (props: PropertiesStartupReinstall) => {
+export const StartupReinstall: FC<PropertiesStartupReinstall> = (/* props: PropertiesStartupReinstall */) => {
   return (
     <>
       <p>No settings</p>
@@ -448,7 +449,7 @@ type PropertiesServerSuspend = {
   index: number,
   task: ServerSuspendTask,
 };
-export const ServerSuspend: FC<PropertiesServerSuspend> = (props: PropertiesServerSuspend) => {
+export const ServerSuspend: FC<PropertiesServerSuspend> = (/* props: PropertiesServerSuspend */) => {
   return (
     <>
       <p>No settings</p>
@@ -463,7 +464,7 @@ type PropertiesServerUnsuspend = {
   index: number,
   task: ServerUnsuspendTask,
 };
-export const ServerUnsuspend: FC<PropertiesServerUnsuspend> = (props: PropertiesServerUnsuspend) => {
+export const ServerUnsuspend: FC<PropertiesServerUnsuspend> = (/* props: PropertiesServerUnsuspend */) => {
   return (
     <>
       <p>No settings</p>

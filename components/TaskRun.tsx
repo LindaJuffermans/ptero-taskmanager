@@ -7,7 +7,7 @@ import styles from '@/styles/TaskRun.module.css';
 
 export const TaskRun = (props: ServerListProps) => {
   const [doRender, setDoRender] = useState(false);
-  const [runList, runListDispatcher] = useContext(RunListContext);
+  const {runList} = useContext(RunListContext);
   const [loggingCategories, setLoggingCategories] = useState(props.categories);
   const logList = useContext(LogListContext);
 
