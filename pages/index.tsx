@@ -47,19 +47,12 @@ export default function App(props: AppProps) {
   const [runList, runListDispatcher] = useReducer(runListHandler, new Set<string>());
   const [logList, logListHandler] = useReducer(taskLogHandler, []);
 
-/*   useEffect(() => {
-    const serverIdList: string[] = props.categories.map(category => category.servers.map(server => server.id)).flat();
-    openAllPteroConnections(serverIdList);
-  }, [props.categories]); */
-
   useEffect(() => {
     if (!socket) {
       fetch('/api/socket')
         .then(_ => {
           const _socket = io();
           setSocket(_socket);
-          console.log('Socket connection established', _socket);
-      
           _socket.on('taskStatus', (serverId: string, type: LogMessageType, message: string) => {
             if (serverId === '--ALL--') {
               console.log('All running completed');
@@ -176,11 +169,11 @@ export default function App(props: AppProps) {
   );
 };
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const contents: Buffer = fs.readFileSync(`${process.env['SERVER_CONFIG_FILE']}`);
   const config: Configuration = YAML.parse(`${contents}`);
-  // const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat();
-  // openAllPteroConnections(serverIdList);
+  const serverIdList: string[] = config.categories.map(category => category.servers.map(server => server.id)).flat();
+  openAllPteroConnections(serverIdList);
 
   return {
     props: {

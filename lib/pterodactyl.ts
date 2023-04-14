@@ -330,7 +330,6 @@ const _pteroWebSocketCollection: Map<string, PteroConnectionWrapper> = new Map<s
  */
 export const pteroWebsocket = (serverId: string): PteroConnectionWrapper | undefined => {
   if (_pteroWebSocketCollection.has(serverId)) {
-    console.log(`Already had socket for ${serverId}`);
     const _socket = _pteroWebSocketCollection.get(serverId);
     if (_socket) {
       return _socket;
@@ -341,7 +340,6 @@ export const pteroWebsocket = (serverId: string): PteroConnectionWrapper | undef
   if (!_socket) {
     throw Error(`Unable to open socket for ${serverId}`);
   }
-  console.log(`New socket for ${serverId}`);
   _pteroWebSocketCollection.set(serverId, _socket);
   return _socket;
 }

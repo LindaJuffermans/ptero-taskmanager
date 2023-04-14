@@ -31,7 +31,6 @@ export interface IClientToServerEvents {
 
 export default function SocketHandler(_: NextApiRequest, response: INextApiResponseWithSocket) {
   if (response.socket.server.io && global.ioSocket) {
-    console.log(`Socket connection was already established`);
     // Socket is already available
   } else {
     /* Client-To-Server first, Server-To-Client second */
@@ -41,9 +40,8 @@ export default function SocketHandler(_: NextApiRequest, response: INextApiRespo
     response.socket.server.io = io;
     global.ioSocket = io;
 
-    io.on('connection', () => {
-      console.log(`Socket connection established`);
-    });
+    // io.on('connection', () => {
+    // });
   }
   response.end();
 }
