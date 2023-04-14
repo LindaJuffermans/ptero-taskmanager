@@ -1,8 +1,6 @@
 
 # Pterodactyl Panel Information:
-#panelDomain: "pterodactyl.mydomain.net"
-#clientKey: "ptlc_InvalidKeyOfcourseImNotUsingOurActualApiKey"
-panelDomain: "endpoint.domain.name"
+panelDomain: "panelurl.net"
 clientKey: "ptlc_FAKEKEYWILLNOTWORK"
 
 # servers
@@ -11,40 +9,29 @@ categories:
   servers:
     - name: "Donald"      # AUS 01 Moon
       id: "dd15f315"
-      node: "node25.mydomain.net"
     - name: "Mickey"      # AUS 02 Sun
       id: "42aa13a2"
-      node: "node25.mydomain.net"
 - name: "Cats"
   servers:
     - name: "Tom"         # CAN 01 Mango
       id: "2eb9bf30"
-      node: "node31.mydomain.net"
     - name: "Topcat"      # CAN 02 Pine
       id: "94c1e340"
-      node: "node13.mydomain.net"
 - name: "Dogs"
   servers:
     - name: "Pluto"       # EUR 01 Venus
       id: "c92c7882"
-      node: "node29.mydomain.net"
     - name: "Scooby Doo"  # EUR 02 Hercules
       id: "9a1c0741"
-      node: "node29.mydomain.net"
     - name: "Ren"         # EUR 03 Olympia
       id: "e83c06f5"
-      node: "node29.mydomain.net"
 - name: "Other"
   servers:
     - name: "Tweetie"     # SGP 01 Bowtruckle
       id: "bd8f5d1e"
-      node: "node11.mydomain.net"
     - name: "Jerry"       # SGP 02 Niffler
       id: "8a16850b"
-      node: "node19.mydomain.net"
     - name: "Pinkie"      # SGP 03 Nundu
       id: "1d5b9b6f"
-      node: "node11.mydomain.net"
     - name: "Brain"       # SGP 04 Doxy
       id: "c0716643"
-      node: "node11.mydomain.net"
